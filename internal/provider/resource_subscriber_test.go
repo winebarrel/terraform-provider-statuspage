@@ -1,21 +1,61 @@
 package provider
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/jarcoal/httpmock"
+	"github.com/winebarrel/terraform-provider-statuspage/internal/apiclient"
 )
 
-func TestAccSubscriber_basic(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		PreCheck:                 func() { testAccPreCheck(t) },
+func TestSubscriber_basic(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	subscriber := &apiclient.Subscriber{
+		ID:     "subscriber-id-1",
+		PageID: "test-page-id",
+		Mode:   "email",
+	}
+
+	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/test-page-id/subscribers",
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.SubscriberRequest
+			_ = json.NewDecoder(req.Body).Decode(&body)
+			subscriber.Email = body.Subscriber.Email
+			return httpmock.NewJsonResponse(201, subscriber)
+		})
+
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/test-page-id/subscribers/subscriber-id-1",
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewJsonResponse(200, subscriber)
+		})
+
+	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/test-page-id/subscribers/subscriber-id-1",
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.SubscriberRequest
+			_ = json.NewDecoder(req.Body).Decode(&body)
+			if body.Subscriber.Email != "" {
+				subscriber.Email = body.Subscriber.Email
+			}
+			return httpmock.NewJsonResponse(200, subscriber)
+		})
+
+	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/test-page-id/subscribers/subscriber-id-1",
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewStringResponse(204, ""), nil
+		})
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read (email subscriber)
 			{
-				Config: testAccSubscriberConfig("tf-test-subscriber@example.com"),
+				Config: testSubscriberConfig("tf-test-subscriber@example.com"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspage_subscriber.test", "email", "tf-test-subscriber@example.com"),
 					resource.TestCheckResourceAttr("statuspage_subscriber.test", "mode", "email"),
@@ -33,7 +73,7 @@ func TestAccSubscriber_basic(t *testing.T) {
 			},
 			// Update email
 			{
-				Config: testAccSubscriberConfig("tf-test-subscriber-updated@example.com"),
+				Config: testSubscriberConfig("tf-test-subscriber-updated@example.com"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspage_subscriber.test", "email", "tf-test-subscriber-updated@example.com"),
 				),
@@ -42,14 +82,14 @@ func TestAccSubscriber_basic(t *testing.T) {
 	})
 }
 
-func testAccSubscriberConfig(email string) string {
+func testSubscriberConfig(email string) string {
 	return fmt.Sprintf(`
 resource "statuspage_subscriber" "test" {
   page_id                      = %q
   email                        = %q
   skip_confirmation_notification = true
 }
-`, testAccPageID, email)
+`, "test-page-id", email)
 }
 
 func importStateIDFuncSubscriber(resourceName string) resource.ImportStateIdFunc {

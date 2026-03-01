@@ -1,26 +1,53 @@
 package provider
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/jarcoal/httpmock"
+	"github.com/winebarrel/terraform-provider-statuspage/internal/apiclient"
 )
 
-func TestAccUser_basic(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		PreCheck: func() {
-			testAccPreCheck(t)
-			if testAccOrganizationID == "" {
-				t.Skip("STATUSPAGE_ORGANIZATION_ID must be set for user acceptance tests")
-			}
-		},
+func TestUser_basic(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	user := &apiclient.User{
+		ID:             "user-id-1",
+		OrganizationID: "test-org-id",
+	}
+
+	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/organizations/test-org-id/users",
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.UserRequest
+			_ = json.NewDecoder(req.Body).Decode(&body)
+			user.Email = body.User.Email
+			user.FirstName = body.User.FirstName
+			user.LastName = body.User.LastName
+			return httpmock.NewJsonResponse(201, user)
+		})
+
+	// GET uses list endpoint - returns array
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/organizations/test-org-id/users",
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewJsonResponse(200, []apiclient.User{*user})
+		})
+
+	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/organizations/test-org-id/users/user-id-1",
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewStringResponse(204, ""), nil
+		})
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read
 			{
-				Config: testAccUserConfig("tf-test-user@example.com", "TestFirst", "TestLast"),
+				Config: testUserConfig("tf-test-user@example.com", "TestFirst", "TestLast"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspage_user.test", "email", "tf-test-user@example.com"),
 					resource.TestCheckResourceAttr("statuspage_user.test", "first_name", "TestFirst"),
@@ -41,7 +68,7 @@ func TestAccUser_basic(t *testing.T) {
 	})
 }
 
-func testAccUserConfig(email, firstName, lastName string) string {
+func testUserConfig(email, firstName, lastName string) string {
 	return fmt.Sprintf(`
 resource "statuspage_user" "test" {
   organization_id = %q
@@ -50,7 +77,7 @@ resource "statuspage_user" "test" {
   first_name      = %q
   last_name       = %q
 }
-`, testAccOrganizationID, email, firstName, lastName)
+`, "test-org-id", email, firstName, lastName)
 }
 
 func importStateIDFuncUser(resourceName string) resource.ImportStateIdFunc {

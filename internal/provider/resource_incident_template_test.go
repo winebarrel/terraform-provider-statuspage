@@ -1,21 +1,73 @@
 package provider
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/jarcoal/httpmock"
+	"github.com/winebarrel/terraform-provider-statuspage/internal/apiclient"
 )
 
-func TestAccIncidentTemplate_basic(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		PreCheck:                 func() { testAccPreCheck(t) },
+func TestIncidentTemplate_basic(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	tmpl := &apiclient.IncidentTemplate{
+		ID:     "incident-template-id-1",
+		PageID: "test-page-id",
+	}
+
+	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/test-page-id/incident_templates",
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.IncidentTemplateRequest
+			_ = json.NewDecoder(req.Body).Decode(&body)
+			tmpl.Name = body.Template.Name
+			tmpl.Title = body.Template.Title
+			tmpl.Body = body.Template.Body
+			tmpl.UpdateStatus = body.Template.UpdateStatus
+			return httpmock.NewJsonResponse(201, tmpl)
+		})
+
+	// GET uses list endpoint - returns array
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/test-page-id/incident_templates",
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewJsonResponse(200, []apiclient.IncidentTemplate{*tmpl})
+		})
+
+	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/test-page-id/incident_templates/incident-template-id-1",
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.IncidentTemplateRequest
+			_ = json.NewDecoder(req.Body).Decode(&body)
+			if body.Template.Name != "" {
+				tmpl.Name = body.Template.Name
+			}
+			if body.Template.Title != "" {
+				tmpl.Title = body.Template.Title
+			}
+			if body.Template.Body != "" {
+				tmpl.Body = body.Template.Body
+			}
+			if body.Template.UpdateStatus != "" {
+				tmpl.UpdateStatus = body.Template.UpdateStatus
+			}
+			return httpmock.NewJsonResponse(200, tmpl)
+		})
+
+	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/test-page-id/incident_templates/incident-template-id-1",
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewStringResponse(204, ""), nil
+		})
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read
 			{
-				Config: testAccIncidentTemplateConfig("tf-test-template", "Test Incident", "investigating"),
+				Config: testIncidentTemplateConfig("tf-test-template", "Test Incident", "investigating"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspage_incident_template.test", "name", "tf-test-template"),
 					resource.TestCheckResourceAttr("statuspage_incident_template.test", "title", "Test Incident"),
@@ -32,7 +84,7 @@ func TestAccIncidentTemplate_basic(t *testing.T) {
 			},
 			// Update
 			{
-				Config: testAccIncidentTemplateConfig("tf-test-template-updated", "Updated Incident", "identified"),
+				Config: testIncidentTemplateConfig("tf-test-template-updated", "Updated Incident", "identified"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspage_incident_template.test", "name", "tf-test-template-updated"),
 					resource.TestCheckResourceAttr("statuspage_incident_template.test", "title", "Updated Incident"),
@@ -43,7 +95,7 @@ func TestAccIncidentTemplate_basic(t *testing.T) {
 	})
 }
 
-func testAccIncidentTemplateConfig(name, title, updateStatus string) string {
+func testIncidentTemplateConfig(name, title, updateStatus string) string {
 	return fmt.Sprintf(`
 resource "statuspage_incident_template" "test" {
   page_id       = %q
@@ -52,7 +104,7 @@ resource "statuspage_incident_template" "test" {
   body          = "This is a template body."
   update_status = %q
 }
-`, testAccPageID, name, title, updateStatus)
+`, "test-page-id", name, title, updateStatus)
 }
 
 func importStateIDFuncIncidentTemplate(resourceName string) resource.ImportStateIdFunc {

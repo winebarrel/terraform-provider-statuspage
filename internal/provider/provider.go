@@ -15,7 +15,8 @@ import (
 var _ provider.Provider = &statuspageProvider{}
 
 type statuspageProvider struct {
-	version string
+	version     string
+	clientOpts  []apiclient.ClientOption
 }
 
 type statuspageProviderModel struct {
@@ -26,9 +27,9 @@ type providerData struct {
 	Client *apiclient.Client
 }
 
-func New(version string) func() provider.Provider {
+func New(version string, clientOpts ...apiclient.ClientOption) func() provider.Provider {
 	return func() provider.Provider {
-		return &statuspageProvider{version: version}
+		return &statuspageProvider{version: version, clientOpts: clientOpts}
 	}
 }
 
@@ -69,7 +70,7 @@ func (p *statuspageProvider) Configure(ctx context.Context, req provider.Configu
 		return
 	}
 
-	client := apiclient.NewClient(apiKey)
+	client := apiclient.NewClient(apiKey, p.clientOpts...)
 	pd := &providerData{
 		Client: client,
 	}

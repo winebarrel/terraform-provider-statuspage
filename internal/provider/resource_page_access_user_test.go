@@ -1,21 +1,64 @@
 package provider
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/jarcoal/httpmock"
+	"github.com/winebarrel/terraform-provider-statuspage/internal/apiclient"
 )
 
-func TestAccPageAccessUser_basic(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		PreCheck:                 func() { testAccPreCheck(t) },
+func TestPageAccessUser_basic(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	user := &apiclient.PageAccessUser{
+		ID:     "page-access-user-id-1",
+		PageID: "test-page-id",
+	}
+
+	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/test-page-id/page_access_users",
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.PageAccessUserRequest
+			_ = json.NewDecoder(req.Body).Decode(&body)
+			user.ExternalLogin = body.PageAccessUser.ExternalLogin
+			user.ExternalEmail = body.PageAccessUser.ExternalEmail
+			return httpmock.NewJsonResponse(201, user)
+		})
+
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/test-page-id/page_access_users/page-access-user-id-1",
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewJsonResponse(200, user)
+		})
+
+	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/test-page-id/page_access_users/page-access-user-id-1",
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.PageAccessUserRequest
+			_ = json.NewDecoder(req.Body).Decode(&body)
+			if body.PageAccessUser.ExternalLogin != "" {
+				user.ExternalLogin = body.PageAccessUser.ExternalLogin
+			}
+			if body.PageAccessUser.ExternalEmail != "" {
+				user.ExternalEmail = body.PageAccessUser.ExternalEmail
+			}
+			return httpmock.NewJsonResponse(200, user)
+		})
+
+	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/test-page-id/page_access_users/page-access-user-id-1",
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewStringResponse(204, ""), nil
+		})
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read
 			{
-				Config: testAccPageAccessUserConfig("tf-test-pau", "tf-test-pau@example.com"),
+				Config: testPageAccessUserConfig("tf-test-pau", "tf-test-pau@example.com"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspage_page_access_user.test", "external_login", "tf-test-pau"),
 					resource.TestCheckResourceAttr("statuspage_page_access_user.test", "external_email", "tf-test-pau@example.com"),
@@ -31,7 +74,7 @@ func TestAccPageAccessUser_basic(t *testing.T) {
 			},
 			// Update
 			{
-				Config: testAccPageAccessUserConfig("tf-test-pau-updated", "tf-test-pau-updated@example.com"),
+				Config: testPageAccessUserConfig("tf-test-pau-updated", "tf-test-pau-updated@example.com"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspage_page_access_user.test", "external_login", "tf-test-pau-updated"),
 					resource.TestCheckResourceAttr("statuspage_page_access_user.test", "external_email", "tf-test-pau-updated@example.com"),
@@ -41,14 +84,14 @@ func TestAccPageAccessUser_basic(t *testing.T) {
 	})
 }
 
-func testAccPageAccessUserConfig(login, email string) string {
+func testPageAccessUserConfig(login, email string) string {
 	return fmt.Sprintf(`
 resource "statuspage_page_access_user" "test" {
   page_id        = %q
   external_login = %q
   external_email = %q
 }
-`, testAccPageID, login, email)
+`, "test-page-id", login, email)
 }
 
 func importStateIDFuncPageAccessUser(resourceName string) resource.ImportStateIdFunc {

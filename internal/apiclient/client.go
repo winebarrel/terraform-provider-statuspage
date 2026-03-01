@@ -15,6 +15,14 @@ const (
 	DefaultBaseURL = "https://api.statuspage.io/v1"
 )
 
+type ClientOption func(*Client)
+
+func WithRateLimitInterval(d time.Duration) ClientOption {
+	return func(c *Client) {
+		c.rateLimitInterval = d
+	}
+}
+
 type APIError struct {
 	StatusCode int
 	Message    string
@@ -25,27 +33,36 @@ func (e *APIError) Error() string {
 }
 
 type Client struct {
-	baseURL    string
-	apiKey     string
-	httpClient *http.Client
-	mu         sync.Mutex
-	lastReq    time.Time
+	baseURL           string
+	apiKey            string
+	httpClient        *http.Client
+	mu                sync.Mutex
+	lastReq           time.Time
+	rateLimitInterval time.Duration
 }
 
-func NewClient(apiKey string) *Client {
-	return &Client{
-		baseURL:    DefaultBaseURL,
-		apiKey:     apiKey,
-		httpClient: &http.Client{Timeout: 30 * time.Second},
+func NewClient(apiKey string, opts ...ClientOption) *Client {
+	c := &Client{
+		baseURL:           DefaultBaseURL,
+		apiKey:            apiKey,
+		httpClient:        &http.Client{Timeout: 30 * time.Second},
+		rateLimitInterval: time.Second,
 	}
+	for _, opt := range opts {
+		opt(c)
+	}
+	return c
 }
 
 func (c *Client) rateLimit() {
+	if c.rateLimitInterval <= 0 {
+		return
+	}
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	elapsed := time.Since(c.lastReq)
-	if elapsed < time.Second {
-		time.Sleep(time.Second - elapsed)
+	if elapsed < c.rateLimitInterval {
+		time.Sleep(c.rateLimitInterval - elapsed)
 	}
 	c.lastReq = time.Now()
 }
@@ -78,7 +95,7 @@ func (c *Client) doRequest(ctx context.Context, method, path string, body interf
 	}
 
 	if resp.StatusCode == 420 || resp.StatusCode == 429 {
-		resp.Body.Close()
+		_ = resp.Body.Close()
 		time.Sleep(2 * time.Second)
 		return c.doRequest(ctx, method, path, body)
 	}
@@ -90,7 +107,7 @@ func (c *Client) checkResponse(resp *http.Response) error {
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
 		return nil
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 	body, _ := io.ReadAll(resp.Body)
 	var errResp struct {
 		Error   string `json:"error"`
@@ -112,7 +129,7 @@ func (c *Client) Get(ctx context.Context, path string, result interface{}) error
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 
 	if err := c.checkResponse(resp); err != nil {
 		return err
@@ -126,7 +143,7 @@ func (c *Client) Post(ctx context.Context, path string, body, result interface{}
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 
 	if err := c.checkResponse(resp); err != nil {
 		return err
@@ -143,7 +160,7 @@ func (c *Client) Patch(ctx context.Context, path string, body, result interface{
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 
 	if err := c.checkResponse(resp); err != nil {
 		return err
@@ -160,7 +177,7 @@ func (c *Client) Put(ctx context.Context, path string, body, result interface{})
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 
 	if err := c.checkResponse(resp); err != nil {
 		return err
@@ -177,7 +194,7 @@ func (c *Client) Delete(ctx context.Context, path string) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 
 	return c.checkResponse(resp)
 }

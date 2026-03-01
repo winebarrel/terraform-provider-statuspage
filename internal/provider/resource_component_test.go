@@ -1,21 +1,65 @@
 package provider
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/jarcoal/httpmock"
+	"github.com/winebarrel/terraform-provider-statuspage/internal/apiclient"
 )
 
-func TestAccComponent_basic(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		PreCheck:                 func() { testAccPreCheck(t) },
+func TestComponent_basic(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	component := &apiclient.Component{
+		ID:              "component-id-1",
+		PageID:          "test-page-id",
+		AutomationEmail: "component+test@notifications.statuspage.io",
+	}
+
+	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/test-page-id/components",
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.ComponentRequest
+			_ = json.NewDecoder(req.Body).Decode(&body)
+			component.Name = body.Component.Name
+			component.Status = body.Component.Status
+			return httpmock.NewJsonResponse(201, component)
+		})
+
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/test-page-id/components/component-id-1",
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewJsonResponse(200, component)
+		})
+
+	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/test-page-id/components/component-id-1",
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.ComponentRequest
+			_ = json.NewDecoder(req.Body).Decode(&body)
+			if body.Component.Name != "" {
+				component.Name = body.Component.Name
+			}
+			if body.Component.Status != "" {
+				component.Status = body.Component.Status
+			}
+			return httpmock.NewJsonResponse(200, component)
+		})
+
+	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/test-page-id/components/component-id-1",
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewStringResponse(204, ""), nil
+		})
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read
 			{
-				Config: testAccComponentConfig("tf-test-component", "operational"),
+				Config: testComponentConfig("tf-test-component", "operational"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspage_component.test", "name", "tf-test-component"),
 					resource.TestCheckResourceAttr("statuspage_component.test", "status", "operational"),
@@ -32,7 +76,7 @@ func TestAccComponent_basic(t *testing.T) {
 			},
 			// Update
 			{
-				Config: testAccComponentConfig("tf-test-component-updated", "degraded_performance"),
+				Config: testComponentConfig("tf-test-component-updated", "degraded_performance"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspage_component.test", "name", "tf-test-component-updated"),
 					resource.TestCheckResourceAttr("statuspage_component.test", "status", "degraded_performance"),
@@ -42,14 +86,14 @@ func TestAccComponent_basic(t *testing.T) {
 	})
 }
 
-func testAccComponentConfig(name, status string) string {
+func testComponentConfig(name, status string) string {
 	return fmt.Sprintf(`
 resource "statuspage_component" "test" {
   page_id = %q
   name    = %q
   status  = %q
 }
-`, testAccPageID, name, status)
+`, "test-page-id", name, status)
 }
 
 func importStateIDFunc(resourceName string) resource.ImportStateIdFunc {

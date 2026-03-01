@@ -1,21 +1,60 @@
 package provider
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/jarcoal/httpmock"
+	"github.com/winebarrel/terraform-provider-statuspage/internal/apiclient"
 )
 
-func TestAccPageAccessGroup_basic(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		PreCheck:                 func() { testAccPreCheck(t) },
+func TestPageAccessGroup_basic(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	group := &apiclient.PageAccessGroup{
+		ID:     "page-access-group-id-1",
+		PageID: "test-page-id",
+	}
+
+	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/test-page-id/page_access_groups",
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.PageAccessGroupRequest
+			_ = json.NewDecoder(req.Body).Decode(&body)
+			group.Name = body.PageAccessGroup.Name
+			return httpmock.NewJsonResponse(201, group)
+		})
+
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/test-page-id/page_access_groups/page-access-group-id-1",
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewJsonResponse(200, group)
+		})
+
+	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/test-page-id/page_access_groups/page-access-group-id-1",
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.PageAccessGroupRequest
+			_ = json.NewDecoder(req.Body).Decode(&body)
+			if body.PageAccessGroup.Name != "" {
+				group.Name = body.PageAccessGroup.Name
+			}
+			return httpmock.NewJsonResponse(200, group)
+		})
+
+	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/test-page-id/page_access_groups/page-access-group-id-1",
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewStringResponse(204, ""), nil
+		})
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read
 			{
-				Config: testAccPageAccessGroupConfig("tf-test-pag"),
+				Config: testPageAccessGroupConfig("tf-test-pag"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspage_page_access_group.test", "name", "tf-test-pag"),
 					resource.TestCheckResourceAttrSet("statuspage_page_access_group.test", "id"),
@@ -30,7 +69,7 @@ func TestAccPageAccessGroup_basic(t *testing.T) {
 			},
 			// Update
 			{
-				Config: testAccPageAccessGroupConfig("tf-test-pag-updated"),
+				Config: testPageAccessGroupConfig("tf-test-pag-updated"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspage_page_access_group.test", "name", "tf-test-pag-updated"),
 				),
@@ -39,13 +78,13 @@ func TestAccPageAccessGroup_basic(t *testing.T) {
 	})
 }
 
-func testAccPageAccessGroupConfig(name string) string {
+func testPageAccessGroupConfig(name string) string {
 	return fmt.Sprintf(`
 resource "statuspage_page_access_group" "test" {
   page_id = %q
   name    = %q
 }
-`, testAccPageID, name)
+`, "test-page-id", name)
 }
 
 func importStateIDFuncPageAccessGroup(resourceName string) resource.ImportStateIdFunc {

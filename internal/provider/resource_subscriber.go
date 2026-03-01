@@ -218,10 +218,10 @@ func (r *subscriberResource) ImportState(ctx context.Context, req resource.Impor
 func (r *subscriberResource) mapToState(ctx context.Context, state *subscriberResourceModel, s *apiclient.Subscriber) {
 	state.ID = types.StringValue(s.ID)
 	state.PageID = types.StringValue(s.PageID)
-	state.Email = types.StringValue(s.Email)
-	state.PhoneNumber = types.StringValue(s.PhoneNumber)
-	state.PhoneCountry = types.StringValue(s.PhoneCountry)
-	state.Endpoint = types.StringValue(s.Endpoint)
+	state.Email = stringValueOrNull(s.Email)
+	state.PhoneNumber = stringValueOrNull(s.PhoneNumber)
+	state.PhoneCountry = stringValueOrNull(s.PhoneCountry)
+	state.Endpoint = stringValueOrNull(s.Endpoint)
 	state.Mode = types.StringValue(s.Mode)
 	if len(s.ComponentIDs) > 0 {
 		componentIDs, _ := types.ListValueFrom(ctx, types.StringType, s.ComponentIDs)

@@ -2,27 +2,16 @@ package provider
 
 import (
 	"os"
-	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/winebarrel/terraform-provider-statuspage/internal/apiclient"
 )
 
-var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
-	"statuspage": providerserver.NewProtocol6WithError(New("test")()),
+var testProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
+	"statuspage": providerserver.NewProtocol6WithError(New("test", apiclient.WithRateLimitInterval(0))()),
 }
 
-var testAccPageID string
-var testAccOrganizationID string
-
-func testAccPreCheck(t *testing.T) {
-	t.Helper()
-	if v := os.Getenv("STATUSPAGE_API_KEY"); v == "" {
-		t.Fatal("STATUSPAGE_API_KEY must be set for acceptance tests")
-	}
-	if v := os.Getenv("STATUSPAGE_PAGE_ID"); v == "" {
-		t.Fatal("STATUSPAGE_PAGE_ID must be set for acceptance tests")
-	}
-	testAccPageID = os.Getenv("STATUSPAGE_PAGE_ID")
-	testAccOrganizationID = os.Getenv("STATUSPAGE_ORGANIZATION_ID")
+func init() {
+	_ = os.Setenv("STATUSPAGE_API_KEY", "test-api-key")
 }

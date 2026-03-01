@@ -1,21 +1,64 @@
 package provider
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/jarcoal/httpmock"
+	"github.com/winebarrel/terraform-provider-statuspage/internal/apiclient"
 )
 
-func TestAccMetricsProvider_basic(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		PreCheck:                 func() { testAccPreCheck(t) },
+func TestMetricsProvider_basic(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	metricsProvider := &apiclient.MetricsProvider{
+		ID:     "metrics-provider-id-1",
+		PageID: "test-page-id",
+	}
+
+	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/test-page-id/metrics_providers",
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.MetricsProviderRequest
+			_ = json.NewDecoder(req.Body).Decode(&body)
+			metricsProvider.Type = body.MetricsProvider.Type
+			metricsProvider.Email = body.MetricsProvider.Email
+			return httpmock.NewJsonResponse(201, metricsProvider)
+		})
+
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/test-page-id/metrics_providers/metrics-provider-id-1",
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewJsonResponse(200, metricsProvider)
+		})
+
+	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/test-page-id/metrics_providers/metrics-provider-id-1",
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.MetricsProviderRequest
+			_ = json.NewDecoder(req.Body).Decode(&body)
+			if body.MetricsProvider.Type != "" {
+				metricsProvider.Type = body.MetricsProvider.Type
+			}
+			if body.MetricsProvider.Email != "" {
+				metricsProvider.Email = body.MetricsProvider.Email
+			}
+			return httpmock.NewJsonResponse(200, metricsProvider)
+		})
+
+	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/test-page-id/metrics_providers/metrics-provider-id-1",
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewStringResponse(204, ""), nil
+		})
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read
 			{
-				Config: testAccMetricsProviderConfig("Self"),
+				Config: testMetricsProviderConfig("Self"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspage_metrics_provider.test", "type", "Self"),
 					resource.TestCheckResourceAttrSet("statuspage_metrics_provider.test", "id"),
@@ -32,7 +75,7 @@ func TestAccMetricsProvider_basic(t *testing.T) {
 			},
 			// Update (change type to Self - effectively a no-op re-apply since type is the same)
 			{
-				Config: testAccMetricsProviderConfigWithEmail("Self", "tf-test@example.com"),
+				Config: testMetricsProviderConfigWithEmail("Self", "tf-test@example.com"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspage_metrics_provider.test", "type", "Self"),
 					resource.TestCheckResourceAttr("statuspage_metrics_provider.test", "email", "tf-test@example.com"),
@@ -42,23 +85,23 @@ func TestAccMetricsProvider_basic(t *testing.T) {
 	})
 }
 
-func testAccMetricsProviderConfig(providerType string) string {
+func testMetricsProviderConfig(providerType string) string {
 	return fmt.Sprintf(`
 resource "statuspage_metrics_provider" "test" {
   page_id = %q
   type    = %q
 }
-`, testAccPageID, providerType)
+`, "test-page-id", providerType)
 }
 
-func testAccMetricsProviderConfigWithEmail(providerType, email string) string {
+func testMetricsProviderConfigWithEmail(providerType, email string) string {
 	return fmt.Sprintf(`
 resource "statuspage_metrics_provider" "test" {
   page_id = %q
   type    = %q
   email   = %q
 }
-`, testAccPageID, providerType, email)
+`, "test-page-id", providerType, email)
 }
 
 func importStateIDFuncMetricsProvider(resourceName string) resource.ImportStateIdFunc {

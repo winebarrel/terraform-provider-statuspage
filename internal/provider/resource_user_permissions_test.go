@@ -1,26 +1,79 @@
 package provider
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/jarcoal/httpmock"
+	"github.com/winebarrel/terraform-provider-statuspage/internal/apiclient"
 )
 
-func TestAccUserPermissions_basic(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		PreCheck: func() {
-			testAccPreCheck(t)
-			if testAccOrganizationID == "" {
-				t.Skip("STATUSPAGE_ORGANIZATION_ID must be set for user permissions acceptance tests")
+func TestUserPermissions_basic(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	user := &apiclient.User{
+		ID:             "user-perm-id-1",
+		OrganizationID: "test-org-id",
+	}
+
+	permissions := &apiclient.Permissions{
+		UserID: "user-perm-id-1",
+		Pages:  map[string]string{},
+	}
+
+	// User responders
+	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/organizations/test-org-id/users",
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.UserRequest
+			_ = json.NewDecoder(req.Body).Decode(&body)
+			user.Email = body.User.Email
+			user.FirstName = body.User.FirstName
+			user.LastName = body.User.LastName
+			return httpmock.NewJsonResponse(201, user)
+		})
+
+	// GET users uses list endpoint
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/organizations/test-org-id/users",
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewJsonResponse(200, []apiclient.User{*user})
+		})
+
+	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/organizations/test-org-id/users/user-perm-id-1",
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewStringResponse(204, ""), nil
+		})
+
+	// Permissions responders
+	httpmock.RegisterResponder("PUT", "https://api.statuspage.io/v1/organizations/test-org-id/permissions/user-perm-id-1",
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.PermissionsRequest
+			_ = json.NewDecoder(req.Body).Decode(&body)
+			pages := make(map[string]string)
+			for k, v := range body.Pages {
+				if len(v) > 0 {
+					pages[k] = v[0]
+				}
 			}
-		},
+			permissions.Pages = pages
+			return httpmock.NewJsonResponse(200, permissions)
+		})
+
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/organizations/test-org-id/permissions/user-perm-id-1",
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewJsonResponse(200, permissions)
+		})
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read (creates a user first, then sets permissions)
 			{
-				Config: testAccUserPermissionsConfig("page_configuration"),
+				Config: testUserPermissionsConfig("page_configuration"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("statuspage_user_permissions.test", "user_id"),
 					resource.TestCheckResourceAttrSet("statuspage_user_permissions.test", "organization_id"),
@@ -28,14 +81,15 @@ func TestAccUserPermissions_basic(t *testing.T) {
 			},
 			// Import
 			{
-				ResourceName:      "statuspage_user_permissions.test",
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateIdFunc: importStateIDFuncUserPermissions("statuspage_user_permissions.test"),
+				ResourceName:                         "statuspage_user_permissions.test",
+				ImportState:                          true,
+				ImportStateVerify:                     true,
+				ImportStateVerifyIdentifierAttribute:  "user_id",
+				ImportStateIdFunc:                     importStateIDFuncUserPermissions("statuspage_user_permissions.test"),
 			},
 			// Update permissions
 			{
-				Config: testAccUserPermissionsConfig("incident_manager"),
+				Config: testUserPermissionsConfig("incident_manager"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("statuspage_user_permissions.test", "user_id"),
 				),
@@ -44,7 +98,7 @@ func TestAccUserPermissions_basic(t *testing.T) {
 	})
 }
 
-func testAccUserPermissionsConfig(permission string) string {
+func testUserPermissionsConfig(permission string) string {
 	return fmt.Sprintf(`
 resource "statuspage_user" "perm_user" {
   organization_id = %[1]q
@@ -61,7 +115,7 @@ resource "statuspage_user_permissions" "test" {
     %[2]q = %[3]q
   }
 }
-`, testAccOrganizationID, testAccPageID, permission)
+`, "test-org-id", "test-page-id", permission)
 }
 
 func importStateIDFuncUserPermissions(resourceName string) resource.ImportStateIdFunc {
