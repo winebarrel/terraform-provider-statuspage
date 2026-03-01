@@ -21,12 +21,12 @@ func TestAccPage_basic(t *testing.T) {
 		Subdomain: "test-subdomain",
 	}
 
-	httpmock.RegisterResponder("GET", testBaseURL+"/pages/"+testAccPageID,
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/"+testAccPageID,
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewJsonResponse(200, page)
 		})
 
-	httpmock.RegisterResponder("PATCH", testBaseURL+"/pages/"+testAccPageID,
+	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/"+testAccPageID,
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.PageRequest
 			json.NewDecoder(req.Body).Decode(&body)

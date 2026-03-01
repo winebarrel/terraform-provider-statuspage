@@ -24,7 +24,7 @@ func TestAccIncident_basic(t *testing.T) {
 		DeliverNotifications: true,
 	}
 
-	httpmock.RegisterResponder("POST", testBaseURL+"/pages/"+testAccPageID+"/incidents",
+	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/incidents",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.IncidentRequest
 			json.NewDecoder(req.Body).Decode(&body)
@@ -34,12 +34,12 @@ func TestAccIncident_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(201, incident)
 		})
 
-	httpmock.RegisterResponder("GET", testBaseURL+"/pages/"+testAccPageID+"/incidents/"+incidentID,
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/incidents/"+incidentID,
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewJsonResponse(200, incident)
 		})
 
-	httpmock.RegisterResponder("PATCH", testBaseURL+"/pages/"+testAccPageID+"/incidents/"+incidentID,
+	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/incidents/"+incidentID,
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.IncidentRequest
 			json.NewDecoder(req.Body).Decode(&body)
@@ -55,7 +55,7 @@ func TestAccIncident_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(200, incident)
 		})
 
-	httpmock.RegisterResponder("DELETE", testBaseURL+"/pages/"+testAccPageID+"/incidents/"+incidentID,
+	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/incidents/"+incidentID,
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewStringResponse(204, ""), nil
 		})

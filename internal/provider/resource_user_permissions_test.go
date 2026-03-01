@@ -28,7 +28,7 @@ func TestAccUserPermissions_basic(t *testing.T) {
 	}
 
 	// User responders
-	httpmock.RegisterResponder("POST", testBaseURL+"/organizations/"+testAccOrganizationID+"/users",
+	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/organizations/"+testAccOrganizationID+"/users",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.UserRequest
 			json.NewDecoder(req.Body).Decode(&body)
@@ -39,18 +39,18 @@ func TestAccUserPermissions_basic(t *testing.T) {
 		})
 
 	// GET users uses list endpoint
-	httpmock.RegisterResponder("GET", testBaseURL+"/organizations/"+testAccOrganizationID+"/users",
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/organizations/"+testAccOrganizationID+"/users",
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewJsonResponse(200, []apiclient.User{*user})
 		})
 
-	httpmock.RegisterResponder("DELETE", testBaseURL+"/organizations/"+testAccOrganizationID+"/users/"+userID,
+	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/organizations/"+testAccOrganizationID+"/users/"+userID,
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewStringResponse(204, ""), nil
 		})
 
 	// Permissions responders
-	httpmock.RegisterResponder("PUT", testBaseURL+"/organizations/"+testAccOrganizationID+"/permissions/"+userID,
+	httpmock.RegisterResponder("PUT", "https://api.statuspage.io/v1/organizations/"+testAccOrganizationID+"/permissions/"+userID,
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.PermissionsRequest
 			json.NewDecoder(req.Body).Decode(&body)
@@ -64,7 +64,7 @@ func TestAccUserPermissions_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(200, permissions)
 		})
 
-	httpmock.RegisterResponder("GET", testBaseURL+"/organizations/"+testAccOrganizationID+"/permissions/"+userID,
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/organizations/"+testAccOrganizationID+"/permissions/"+userID,
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewJsonResponse(200, permissions)
 		})

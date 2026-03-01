@@ -22,7 +22,7 @@ func TestAccPageAccessGroup_basic(t *testing.T) {
 		PageID: testAccPageID,
 	}
 
-	httpmock.RegisterResponder("POST", testBaseURL+"/pages/"+testAccPageID+"/page_access_groups",
+	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/page_access_groups",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.PageAccessGroupRequest
 			json.NewDecoder(req.Body).Decode(&body)
@@ -30,12 +30,12 @@ func TestAccPageAccessGroup_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(201, group)
 		})
 
-	httpmock.RegisterResponder("GET", testBaseURL+"/pages/"+testAccPageID+"/page_access_groups/"+groupID,
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/page_access_groups/"+groupID,
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewJsonResponse(200, group)
 		})
 
-	httpmock.RegisterResponder("PATCH", testBaseURL+"/pages/"+testAccPageID+"/page_access_groups/"+groupID,
+	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/page_access_groups/"+groupID,
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.PageAccessGroupRequest
 			json.NewDecoder(req.Body).Decode(&body)
@@ -45,7 +45,7 @@ func TestAccPageAccessGroup_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(200, group)
 		})
 
-	httpmock.RegisterResponder("DELETE", testBaseURL+"/pages/"+testAccPageID+"/page_access_groups/"+groupID,
+	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/page_access_groups/"+groupID,
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewStringResponse(204, ""), nil
 		})

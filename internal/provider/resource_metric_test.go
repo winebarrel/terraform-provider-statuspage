@@ -31,7 +31,7 @@ func TestAccMetric_basic(t *testing.T) {
 	}
 
 	// Metrics Provider responders
-	httpmock.RegisterResponder("POST", testBaseURL+"/pages/"+testAccPageID+"/metrics_providers",
+	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/metrics_providers",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.MetricsProviderRequest
 			json.NewDecoder(req.Body).Decode(&body)
@@ -39,18 +39,18 @@ func TestAccMetric_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(201, metricsProvider)
 		})
 
-	httpmock.RegisterResponder("GET", testBaseURL+"/pages/"+testAccPageID+"/metrics_providers/"+providerID,
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/metrics_providers/"+providerID,
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewJsonResponse(200, metricsProvider)
 		})
 
-	httpmock.RegisterResponder("DELETE", testBaseURL+"/pages/"+testAccPageID+"/metrics_providers/"+providerID,
+	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/metrics_providers/"+providerID,
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewStringResponse(204, ""), nil
 		})
 
 	// Metric responders
-	httpmock.RegisterResponder("POST", testBaseURL+"/pages/"+testAccPageID+"/metrics_providers/"+providerID+"/metrics",
+	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/metrics_providers/"+providerID+"/metrics",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.MetricRequest
 			json.NewDecoder(req.Body).Decode(&body)
@@ -59,12 +59,12 @@ func TestAccMetric_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(201, metric)
 		})
 
-	httpmock.RegisterResponder("GET", testBaseURL+"/pages/"+testAccPageID+"/metrics/"+metricID,
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/metrics/"+metricID,
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewJsonResponse(200, metric)
 		})
 
-	httpmock.RegisterResponder("PATCH", testBaseURL+"/pages/"+testAccPageID+"/metrics/"+metricID,
+	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/metrics/"+metricID,
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.MetricRequest
 			json.NewDecoder(req.Body).Decode(&body)
@@ -77,7 +77,7 @@ func TestAccMetric_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(200, metric)
 		})
 
-	httpmock.RegisterResponder("DELETE", testBaseURL+"/pages/"+testAccPageID+"/metrics/"+metricID,
+	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/metrics/"+metricID,
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewStringResponse(204, ""), nil
 		})

@@ -22,12 +22,12 @@ func TestAccStatusEmbedConfig_basic(t *testing.T) {
 		IncidentTextColor:       "#FFFFFF",
 	}
 
-	httpmock.RegisterResponder("GET", testBaseURL+"/pages/"+testAccPageID+"/status_embed_config",
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/status_embed_config",
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewJsonResponse(200, config)
 		})
 
-	httpmock.RegisterResponder("PATCH", testBaseURL+"/pages/"+testAccPageID+"/status_embed_config",
+	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/status_embed_config",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.StatusEmbedConfigRequest
 			json.NewDecoder(req.Body).Decode(&body)

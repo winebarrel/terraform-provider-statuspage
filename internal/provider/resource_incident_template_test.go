@@ -22,7 +22,7 @@ func TestAccIncidentTemplate_basic(t *testing.T) {
 		PageID: testAccPageID,
 	}
 
-	httpmock.RegisterResponder("POST", testBaseURL+"/pages/"+testAccPageID+"/incident_templates",
+	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/incident_templates",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.IncidentTemplateRequest
 			json.NewDecoder(req.Body).Decode(&body)
@@ -34,12 +34,12 @@ func TestAccIncidentTemplate_basic(t *testing.T) {
 		})
 
 	// GET uses list endpoint - returns array
-	httpmock.RegisterResponder("GET", testBaseURL+"/pages/"+testAccPageID+"/incident_templates",
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/incident_templates",
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewJsonResponse(200, []apiclient.IncidentTemplate{*tmpl})
 		})
 
-	httpmock.RegisterResponder("PATCH", testBaseURL+"/pages/"+testAccPageID+"/incident_templates/"+templateID,
+	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/incident_templates/"+templateID,
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.IncidentTemplateRequest
 			json.NewDecoder(req.Body).Decode(&body)
@@ -58,7 +58,7 @@ func TestAccIncidentTemplate_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(200, tmpl)
 		})
 
-	httpmock.RegisterResponder("DELETE", testBaseURL+"/pages/"+testAccPageID+"/incident_templates/"+templateID,
+	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/incident_templates/"+templateID,
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewStringResponse(204, ""), nil
 		})

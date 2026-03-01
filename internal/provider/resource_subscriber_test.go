@@ -23,7 +23,7 @@ func TestAccSubscriber_basic(t *testing.T) {
 		Mode:   "email",
 	}
 
-	httpmock.RegisterResponder("POST", testBaseURL+"/pages/"+testAccPageID+"/subscribers",
+	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/subscribers",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.SubscriberRequest
 			json.NewDecoder(req.Body).Decode(&body)
@@ -31,12 +31,12 @@ func TestAccSubscriber_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(201, subscriber)
 		})
 
-	httpmock.RegisterResponder("GET", testBaseURL+"/pages/"+testAccPageID+"/subscribers/"+subscriberID,
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/subscribers/"+subscriberID,
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewJsonResponse(200, subscriber)
 		})
 
-	httpmock.RegisterResponder("PATCH", testBaseURL+"/pages/"+testAccPageID+"/subscribers/"+subscriberID,
+	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/subscribers/"+subscriberID,
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.SubscriberRequest
 			json.NewDecoder(req.Body).Decode(&body)
@@ -46,7 +46,7 @@ func TestAccSubscriber_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(200, subscriber)
 		})
 
-	httpmock.RegisterResponder("DELETE", testBaseURL+"/pages/"+testAccPageID+"/subscribers/"+subscriberID,
+	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/subscribers/"+subscriberID,
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewStringResponse(204, ""), nil
 		})

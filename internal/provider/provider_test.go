@@ -15,8 +15,6 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 var testAccPageID = "test-page-id"
 var testAccOrganizationID = "test-org-id"
 
-const testBaseURL = "https://api.statuspage.io/v1"
-
 func init() {
 	os.Setenv("STATUSPAGE_API_KEY", "test-api-key")
 	apiclient.RateLimitInterval = 0

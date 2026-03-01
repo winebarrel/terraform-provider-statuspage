@@ -22,7 +22,7 @@ func TestAccUser_basic(t *testing.T) {
 		OrganizationID: testAccOrganizationID,
 	}
 
-	httpmock.RegisterResponder("POST", testBaseURL+"/organizations/"+testAccOrganizationID+"/users",
+	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/organizations/"+testAccOrganizationID+"/users",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.UserRequest
 			json.NewDecoder(req.Body).Decode(&body)
@@ -33,12 +33,12 @@ func TestAccUser_basic(t *testing.T) {
 		})
 
 	// GET uses list endpoint - returns array
-	httpmock.RegisterResponder("GET", testBaseURL+"/organizations/"+testAccOrganizationID+"/users",
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/organizations/"+testAccOrganizationID+"/users",
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewJsonResponse(200, []apiclient.User{*user})
 		})
 
-	httpmock.RegisterResponder("DELETE", testBaseURL+"/organizations/"+testAccOrganizationID+"/users/"+userID,
+	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/organizations/"+testAccOrganizationID+"/users/"+userID,
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewStringResponse(204, ""), nil
 		})

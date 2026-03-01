@@ -23,7 +23,7 @@ func TestAccComponent_basic(t *testing.T) {
 		AutomationEmail: "component+test@notifications.statuspage.io",
 	}
 
-	httpmock.RegisterResponder("POST", testBaseURL+"/pages/"+testAccPageID+"/components",
+	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/components",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.ComponentRequest
 			json.NewDecoder(req.Body).Decode(&body)
@@ -32,12 +32,12 @@ func TestAccComponent_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(201, component)
 		})
 
-	httpmock.RegisterResponder("GET", testBaseURL+"/pages/"+testAccPageID+"/components/"+componentID,
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/components/"+componentID,
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewJsonResponse(200, component)
 		})
 
-	httpmock.RegisterResponder("PATCH", testBaseURL+"/pages/"+testAccPageID+"/components/"+componentID,
+	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/components/"+componentID,
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.ComponentRequest
 			json.NewDecoder(req.Body).Decode(&body)
@@ -50,7 +50,7 @@ func TestAccComponent_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(200, component)
 		})
 
-	httpmock.RegisterResponder("DELETE", testBaseURL+"/pages/"+testAccPageID+"/components/"+componentID,
+	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/components/"+componentID,
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewStringResponse(204, ""), nil
 		})
