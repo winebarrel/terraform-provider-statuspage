@@ -24,7 +24,7 @@ func TestIncidentTemplate_basic(t *testing.T) {
 	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/test-page-id/incident_templates",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.IncidentTemplateRequest
-			_ = json.NewDecoder(req.Body).Decode(&body)
+			json.NewDecoder(req.Body).Decode(&body)
 			tmpl.Name = body.Template.Name
 			tmpl.Title = body.Template.Title
 			tmpl.Body = body.Template.Body
@@ -41,7 +41,7 @@ func TestIncidentTemplate_basic(t *testing.T) {
 	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/test-page-id/incident_templates/incident-template-id-1",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.IncidentTemplateRequest
-			_ = json.NewDecoder(req.Body).Decode(&body)
+			json.NewDecoder(req.Body).Decode(&body)
 			if body.Template.Name != "" {
 				tmpl.Name = body.Template.Name
 			}

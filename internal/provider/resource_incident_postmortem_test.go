@@ -31,7 +31,7 @@ func TestIncidentPostmortem_basic(t *testing.T) {
 	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/test-page-id/incidents",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.IncidentRequest
-			_ = json.NewDecoder(req.Body).Decode(&body)
+			json.NewDecoder(req.Body).Decode(&body)
 			incident.Name = body.Incident.Name
 			incident.Status = body.Incident.Status
 			incident.Body = body.Incident.Body
@@ -52,7 +52,7 @@ func TestIncidentPostmortem_basic(t *testing.T) {
 	httpmock.RegisterResponder("PUT", "https://api.statuspage.io/v1/pages/test-page-id/incidents/postmortem-incident-id-1/postmortem",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.PostmortemRequest
-			_ = json.NewDecoder(req.Body).Decode(&body)
+			json.NewDecoder(req.Body).Decode(&body)
 			if body.Postmortem.Body != "" {
 				postmortem.Body = body.Postmortem.Body
 			}
@@ -82,8 +82,8 @@ func TestIncidentPostmortem_basic(t *testing.T) {
 			},
 			// Import
 			{
-				ResourceName:                        "statuspage_incident_postmortem.test",
-				ImportState:                         true,
+				ResourceName:                         "statuspage_incident_postmortem.test",
+				ImportState:                          true,
 				ImportStateVerify:                    true,
 				ImportStateVerifyIdentifierAttribute: "incident_id",
 				ImportStateIdFunc:                    importStateIDFuncPostmortem("statuspage_incident_postmortem.test"),

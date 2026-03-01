@@ -24,7 +24,7 @@ func TestPageAccessUser_basic(t *testing.T) {
 	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/test-page-id/page_access_users",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.PageAccessUserRequest
-			_ = json.NewDecoder(req.Body).Decode(&body)
+			json.NewDecoder(req.Body).Decode(&body)
 			user.ExternalLogin = body.PageAccessUser.ExternalLogin
 			user.ExternalEmail = body.PageAccessUser.ExternalEmail
 			return httpmock.NewJsonResponse(201, user)
@@ -38,7 +38,7 @@ func TestPageAccessUser_basic(t *testing.T) {
 	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/test-page-id/page_access_users/page-access-user-id-1",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.PageAccessUserRequest
-			_ = json.NewDecoder(req.Body).Decode(&body)
+			json.NewDecoder(req.Body).Decode(&body)
 			if body.PageAccessUser.ExternalLogin != "" {
 				user.ExternalLogin = body.PageAccessUser.ExternalLogin
 			}

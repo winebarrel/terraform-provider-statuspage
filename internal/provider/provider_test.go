@@ -13,5 +13,5 @@ var testProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, 
 }
 
 func init() {
-	_ = os.Setenv("STATUSPAGE_API_KEY", "test-api-key")
+	os.Setenv("STATUSPAGE_API_KEY", "test-api-key")
 }

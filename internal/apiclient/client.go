@@ -95,7 +95,7 @@ func (c *Client) doRequest(ctx context.Context, method, path string, body interf
 	}
 
 	if resp.StatusCode == 420 || resp.StatusCode == 429 {
-		_ = resp.Body.Close()
+		resp.Body.Close() //nolint:errcheck
 		time.Sleep(2 * time.Second)
 		return c.doRequest(ctx, method, path, body)
 	}
@@ -113,7 +113,7 @@ func (c *Client) checkResponse(resp *http.Response) error {
 		Error   string `json:"error"`
 		Message string `json:"message"`
 	}
-	_ = json.Unmarshal(body, &errResp)
+	json.Unmarshal(body, &errResp) //nolint:errcheck
 	msg := errResp.Error
 	if msg == "" {
 		msg = errResp.Message

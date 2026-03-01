@@ -30,7 +30,7 @@ func TestUserPermissions_basic(t *testing.T) {
 	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/organizations/test-org-id/users",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.UserRequest
-			_ = json.NewDecoder(req.Body).Decode(&body)
+			json.NewDecoder(req.Body).Decode(&body)
 			user.Email = body.User.Email
 			user.FirstName = body.User.FirstName
 			user.LastName = body.User.LastName
@@ -52,7 +52,7 @@ func TestUserPermissions_basic(t *testing.T) {
 	httpmock.RegisterResponder("PUT", "https://api.statuspage.io/v1/organizations/test-org-id/permissions/user-perm-id-1",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.PermissionsRequest
-			_ = json.NewDecoder(req.Body).Decode(&body)
+			json.NewDecoder(req.Body).Decode(&body)
 			pages := make(map[string]string)
 			for k, v := range body.Pages {
 				if len(v) > 0 {
@@ -83,9 +83,9 @@ func TestUserPermissions_basic(t *testing.T) {
 			{
 				ResourceName:                         "statuspage_user_permissions.test",
 				ImportState:                          true,
-				ImportStateVerify:                     true,
-				ImportStateVerifyIdentifierAttribute:  "user_id",
-				ImportStateIdFunc:                     importStateIDFuncUserPermissions("statuspage_user_permissions.test"),
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "user_id",
+				ImportStateIdFunc:                    importStateIDFuncUserPermissions("statuspage_user_permissions.test"),
 			},
 			// Update permissions
 			{
