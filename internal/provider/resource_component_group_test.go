@@ -22,9 +22,8 @@ func TestAccComponentGroup_basic(t *testing.T) {
 	compIdx := 0
 	components := map[string]*apiclient.Component{}
 
-	groupID := "comp-group-id-1"
 	group := &apiclient.ComponentGroup{
-		ID:     groupID,
+		ID:     "comp-group-id-1",
 		PageID: "test-page-id",
 	}
 
@@ -96,13 +95,13 @@ func TestAccComponentGroup_basic(t *testing.T) {
 		})
 
 	// GET /pages/{pageID}/component-groups/{id}
-	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/test-page-id/component-groups/"+groupID,
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/test-page-id/component-groups/comp-group-id-1",
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewJsonResponse(200, group)
 		})
 
 	// PATCH /pages/{pageID}/component-groups/{id}
-	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/test-page-id/component-groups/"+groupID,
+	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/test-page-id/component-groups/comp-group-id-1",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.ComponentGroupRequest
 			_ = json.NewDecoder(req.Body).Decode(&body)
@@ -116,7 +115,7 @@ func TestAccComponentGroup_basic(t *testing.T) {
 		})
 
 	// DELETE /pages/{pageID}/component-groups/{id}
-	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/test-page-id/component-groups/"+groupID,
+	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/test-page-id/component-groups/comp-group-id-1",
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewStringResponse(204, ""), nil
 		})
