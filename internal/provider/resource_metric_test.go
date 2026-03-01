@@ -33,7 +33,7 @@ func TestMetric_basic(t *testing.T) {
 	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/test-page-id/metrics_providers",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.MetricsProviderRequest
-			_ = json.NewDecoder(req.Body).Decode(&body)
+			json.NewDecoder(req.Body).Decode(&body)
 			metricsProvider.Type = body.MetricsProvider.Type
 			return httpmock.NewJsonResponse(201, metricsProvider)
 		})
@@ -52,7 +52,7 @@ func TestMetric_basic(t *testing.T) {
 	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/test-page-id/metrics_providers/metrics-provider-for-metric-1/metrics",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.MetricRequest
-			_ = json.NewDecoder(req.Body).Decode(&body)
+			json.NewDecoder(req.Body).Decode(&body)
 			metric.Name = body.Metric.Name
 			metric.Suffix = body.Metric.Suffix
 			return httpmock.NewJsonResponse(201, metric)
@@ -66,7 +66,7 @@ func TestMetric_basic(t *testing.T) {
 	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/test-page-id/metrics/"+metricID,
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.MetricRequest
-			_ = json.NewDecoder(req.Body).Decode(&body)
+			json.NewDecoder(req.Body).Decode(&body)
 			if body.Metric.Name != "" {
 				metric.Name = body.Metric.Name
 			}

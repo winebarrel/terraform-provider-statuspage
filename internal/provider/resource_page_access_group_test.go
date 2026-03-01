@@ -24,7 +24,7 @@ func TestPageAccessGroup_basic(t *testing.T) {
 	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/test-page-id/page_access_groups",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.PageAccessGroupRequest
-			_ = json.NewDecoder(req.Body).Decode(&body)
+			json.NewDecoder(req.Body).Decode(&body)
 			group.Name = body.PageAccessGroup.Name
 			return httpmock.NewJsonResponse(201, group)
 		})
@@ -37,7 +37,7 @@ func TestPageAccessGroup_basic(t *testing.T) {
 	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/test-page-id/page_access_groups/page-access-group-id-1",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.PageAccessGroupRequest
-			_ = json.NewDecoder(req.Body).Decode(&body)
+			json.NewDecoder(req.Body).Decode(&body)
 			if body.PageAccessGroup.Name != "" {
 				group.Name = body.PageAccessGroup.Name
 			}

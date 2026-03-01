@@ -30,7 +30,7 @@ func TestStatusEmbedConfig_basic(t *testing.T) {
 	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/test-page-id/status_embed_config",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.StatusEmbedConfigRequest
-			_ = json.NewDecoder(req.Body).Decode(&body)
+			json.NewDecoder(req.Body).Decode(&body)
 			if body.StatusEmbedConfig.Position != "" {
 				config.Position = body.StatusEmbedConfig.Position
 			}

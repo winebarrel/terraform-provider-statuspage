@@ -24,7 +24,7 @@ func TestUser_basic(t *testing.T) {
 	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/organizations/test-org-id/users",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.UserRequest
-			_ = json.NewDecoder(req.Body).Decode(&body)
+			json.NewDecoder(req.Body).Decode(&body)
 			user.Email = body.User.Email
 			user.FirstName = body.User.FirstName
 			user.LastName = body.User.LastName
