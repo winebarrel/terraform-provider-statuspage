@@ -16,9 +16,8 @@ func TestAccMetric_basic(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	providerID := "metrics-provider-for-metric-1"
 	metricsProvider := &apiclient.MetricsProvider{
-		ID:     providerID,
+		ID:     "metrics-provider-for-metric-1",
 		PageID: "test-page-id",
 		Type:   "Self",
 	}
@@ -27,7 +26,7 @@ func TestAccMetric_basic(t *testing.T) {
 	metric := &apiclient.Metric{
 		ID:                metricID,
 		PageID:            "test-page-id",
-		MetricsProviderID: providerID,
+		MetricsProviderID: "metrics-provider-for-metric-1",
 	}
 
 	// Metrics Provider responders
@@ -39,18 +38,18 @@ func TestAccMetric_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(201, metricsProvider)
 		})
 
-	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/test-page-id/metrics_providers/"+providerID,
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/test-page-id/metrics_providers/metrics-provider-for-metric-1",
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewJsonResponse(200, metricsProvider)
 		})
 
-	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/test-page-id/metrics_providers/"+providerID,
+	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/test-page-id/metrics_providers/metrics-provider-for-metric-1",
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewStringResponse(204, ""), nil
 		})
 
 	// Metric responders
-	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/test-page-id/metrics_providers/"+providerID+"/metrics",
+	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/test-page-id/metrics_providers/metrics-provider-for-metric-1/metrics",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.MetricRequest
 			_ = json.NewDecoder(req.Body).Decode(&body)
