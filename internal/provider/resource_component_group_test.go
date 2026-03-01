@@ -1,17 +1,118 @@
 package provider
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/jarcoal/httpmock"
+	"github.com/winebarrel/terraform-provider-statuspage/internal/apiclient"
 )
 
 func TestAccComponentGroup_basic(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	compIDs := []string{"comp-in-group-1", "comp-in-group-2"}
+	compIdx := 0
+	components := map[string]*apiclient.Component{}
+
+	groupID := "comp-group-id-1"
+	group := &apiclient.ComponentGroup{
+		ID:     groupID,
+		PageID: testAccPageID,
+	}
+
+	// POST /pages/{pageID}/components
+	httpmock.RegisterResponder("POST", testBaseURL+"/pages/"+testAccPageID+"/components",
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.ComponentRequest
+			json.NewDecoder(req.Body).Decode(&body)
+			id := compIDs[compIdx]
+			compIdx++
+			comp := &apiclient.Component{
+				ID:     id,
+				PageID: testAccPageID,
+				Name:   body.Component.Name,
+				Status: body.Component.Status,
+			}
+			components[id] = comp
+			return httpmock.NewJsonResponse(201, comp)
+		})
+
+	// GET/DELETE for each component
+	for _, id := range compIDs {
+		id := id
+		httpmock.RegisterResponder("GET", testBaseURL+"/pages/"+testAccPageID+"/components/"+id,
+			func(req *http.Request) (*http.Response, error) {
+				if comp, ok := components[id]; ok {
+					return httpmock.NewJsonResponse(200, comp)
+				}
+				return httpmock.NewJsonResponse(404, map[string]string{"error": "not found"})
+			})
+		httpmock.RegisterResponder("PATCH", testBaseURL+"/pages/"+testAccPageID+"/components/"+id,
+			func(req *http.Request) (*http.Response, error) {
+				var body apiclient.ComponentRequest
+				json.NewDecoder(req.Body).Decode(&body)
+				if comp, ok := components[id]; ok {
+					if body.Component.Name != "" {
+						comp.Name = body.Component.Name
+					}
+					if body.Component.Status != "" {
+						comp.Status = body.Component.Status
+					}
+					return httpmock.NewJsonResponse(200, comp)
+				}
+				return httpmock.NewJsonResponse(404, map[string]string{"error": "not found"})
+			})
+		httpmock.RegisterResponder("DELETE", testBaseURL+"/pages/"+testAccPageID+"/components/"+id,
+			func(req *http.Request) (*http.Response, error) {
+				delete(components, id)
+				return httpmock.NewStringResponse(204, ""), nil
+			})
+	}
+
+	// POST /pages/{pageID}/component-groups
+	httpmock.RegisterResponder("POST", testBaseURL+"/pages/"+testAccPageID+"/component-groups",
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.ComponentGroupRequest
+			json.NewDecoder(req.Body).Decode(&body)
+			group.Name = body.ComponentGroup.Name
+			group.Components = body.ComponentGroup.Components
+			return httpmock.NewJsonResponse(201, group)
+		})
+
+	// GET /pages/{pageID}/component-groups/{id}
+	httpmock.RegisterResponder("GET", testBaseURL+"/pages/"+testAccPageID+"/component-groups/"+groupID,
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewJsonResponse(200, group)
+		})
+
+	// PATCH /pages/{pageID}/component-groups/{id}
+	httpmock.RegisterResponder("PATCH", testBaseURL+"/pages/"+testAccPageID+"/component-groups/"+groupID,
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.ComponentGroupRequest
+			json.NewDecoder(req.Body).Decode(&body)
+			if body.ComponentGroup.Name != "" {
+				group.Name = body.ComponentGroup.Name
+			}
+			if body.ComponentGroup.Components != nil {
+				group.Components = body.ComponentGroup.Components
+			}
+			return httpmock.NewJsonResponse(200, group)
+		})
+
+	// DELETE /pages/{pageID}/component-groups/{id}
+	httpmock.RegisterResponder("DELETE", testBaseURL+"/pages/"+testAccPageID+"/component-groups/"+groupID,
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewStringResponse(204, ""), nil
+		})
+
+	resource.UnitTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			// Create and Read
 			{

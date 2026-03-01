@@ -1,17 +1,58 @@
 package provider
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/jarcoal/httpmock"
+	"github.com/winebarrel/terraform-provider-statuspage/internal/apiclient"
 )
 
 func TestAccSubscriber_basic(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	subscriberID := "subscriber-id-1"
+	subscriber := &apiclient.Subscriber{
+		ID:     subscriberID,
+		PageID: testAccPageID,
+		Mode:   "email",
+	}
+
+	httpmock.RegisterResponder("POST", testBaseURL+"/pages/"+testAccPageID+"/subscribers",
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.SubscriberRequest
+			json.NewDecoder(req.Body).Decode(&body)
+			subscriber.Email = body.Subscriber.Email
+			return httpmock.NewJsonResponse(201, subscriber)
+		})
+
+	httpmock.RegisterResponder("GET", testBaseURL+"/pages/"+testAccPageID+"/subscribers/"+subscriberID,
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewJsonResponse(200, subscriber)
+		})
+
+	httpmock.RegisterResponder("PATCH", testBaseURL+"/pages/"+testAccPageID+"/subscribers/"+subscriberID,
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.SubscriberRequest
+			json.NewDecoder(req.Body).Decode(&body)
+			if body.Subscriber.Email != "" {
+				subscriber.Email = body.Subscriber.Email
+			}
+			return httpmock.NewJsonResponse(200, subscriber)
+		})
+
+	httpmock.RegisterResponder("DELETE", testBaseURL+"/pages/"+testAccPageID+"/subscribers/"+subscriberID,
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewStringResponse(204, ""), nil
+		})
+
+	resource.UnitTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			// Create and Read (email subscriber)
 			{

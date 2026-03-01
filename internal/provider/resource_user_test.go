@@ -1,22 +1,50 @@
 package provider
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/jarcoal/httpmock"
+	"github.com/winebarrel/terraform-provider-statuspage/internal/apiclient"
 )
 
 func TestAccUser_basic(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	userID := "user-id-1"
+	user := &apiclient.User{
+		ID:             userID,
+		OrganizationID: testAccOrganizationID,
+	}
+
+	httpmock.RegisterResponder("POST", testBaseURL+"/organizations/"+testAccOrganizationID+"/users",
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.UserRequest
+			json.NewDecoder(req.Body).Decode(&body)
+			user.Email = body.User.Email
+			user.FirstName = body.User.FirstName
+			user.LastName = body.User.LastName
+			return httpmock.NewJsonResponse(201, user)
+		})
+
+	// GET uses list endpoint - returns array
+	httpmock.RegisterResponder("GET", testBaseURL+"/organizations/"+testAccOrganizationID+"/users",
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewJsonResponse(200, []apiclient.User{*user})
+		})
+
+	httpmock.RegisterResponder("DELETE", testBaseURL+"/organizations/"+testAccOrganizationID+"/users/"+userID,
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewStringResponse(204, ""), nil
+		})
+
+	resource.UnitTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		PreCheck: func() {
-			testAccPreCheck(t)
-			if testAccOrganizationID == "" {
-				t.Skip("STATUSPAGE_ORGANIZATION_ID must be set for user acceptance tests")
-			}
-		},
 		Steps: []resource.TestStep{
 			// Create and Read
 			{

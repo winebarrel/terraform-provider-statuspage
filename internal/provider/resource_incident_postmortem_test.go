@@ -1,17 +1,77 @@
 package provider
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/jarcoal/httpmock"
+	"github.com/winebarrel/terraform-provider-statuspage/internal/apiclient"
 )
 
 func TestAccIncidentPostmortem_basic(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	incidentID := "postmortem-incident-id-1"
+	incident := &apiclient.Incident{
+		ID:                   incidentID,
+		PageID:               testAccPageID,
+		Name:                 "tf-test-postmortem-incident",
+		Status:               "resolved",
+		Body:                 "Incident for postmortem testing.",
+		DeliverNotifications: true,
+	}
+
+	postmortem := &apiclient.Postmortem{}
+
+	// Incident responders
+	httpmock.RegisterResponder("POST", testBaseURL+"/pages/"+testAccPageID+"/incidents",
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.IncidentRequest
+			json.NewDecoder(req.Body).Decode(&body)
+			incident.Name = body.Incident.Name
+			incident.Status = body.Incident.Status
+			incident.Body = body.Incident.Body
+			return httpmock.NewJsonResponse(201, incident)
+		})
+
+	httpmock.RegisterResponder("GET", testBaseURL+"/pages/"+testAccPageID+"/incidents/"+incidentID,
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewJsonResponse(200, incident)
+		})
+
+	httpmock.RegisterResponder("DELETE", testBaseURL+"/pages/"+testAccPageID+"/incidents/"+incidentID,
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewStringResponse(204, ""), nil
+		})
+
+	// Postmortem responders
+	httpmock.RegisterResponder("PUT", testBaseURL+"/pages/"+testAccPageID+"/incidents/"+incidentID+"/postmortem",
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.PostmortemRequest
+			json.NewDecoder(req.Body).Decode(&body)
+			if body.Postmortem.Body != "" {
+				postmortem.Body = body.Postmortem.Body
+			}
+			return httpmock.NewJsonResponse(200, postmortem)
+		})
+
+	httpmock.RegisterResponder("GET", testBaseURL+"/pages/"+testAccPageID+"/incidents/"+incidentID+"/postmortem",
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewJsonResponse(200, postmortem)
+		})
+
+	httpmock.RegisterResponder("DELETE", testBaseURL+"/pages/"+testAccPageID+"/incidents/"+incidentID+"/postmortem",
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewStringResponse(204, ""), nil
+		})
+
+	resource.UnitTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			// Create and Read (creates an incident first, then attaches postmortem)
 			{
@@ -23,10 +83,11 @@ func TestAccIncidentPostmortem_basic(t *testing.T) {
 			},
 			// Import
 			{
-				ResourceName:      "statuspage_incident_postmortem.test",
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateIdFunc: importStateIDFuncPostmortem("statuspage_incident_postmortem.test"),
+				ResourceName:                        "statuspage_incident_postmortem.test",
+				ImportState:                         true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "incident_id",
+				ImportStateIdFunc:                    importStateIDFuncPostmortem("statuspage_incident_postmortem.test"),
 			},
 			// Update
 			{

@@ -1,17 +1,70 @@
 package provider
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/jarcoal/httpmock"
+	"github.com/winebarrel/terraform-provider-statuspage/internal/apiclient"
 )
 
 func TestAccIncidentTemplate_basic(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	templateID := "incident-template-id-1"
+	tmpl := &apiclient.IncidentTemplate{
+		ID:     templateID,
+		PageID: testAccPageID,
+	}
+
+	httpmock.RegisterResponder("POST", testBaseURL+"/pages/"+testAccPageID+"/incident_templates",
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.IncidentTemplateRequest
+			json.NewDecoder(req.Body).Decode(&body)
+			tmpl.Name = body.Template.Name
+			tmpl.Title = body.Template.Title
+			tmpl.Body = body.Template.Body
+			tmpl.UpdateStatus = body.Template.UpdateStatus
+			return httpmock.NewJsonResponse(201, tmpl)
+		})
+
+	// GET uses list endpoint - returns array
+	httpmock.RegisterResponder("GET", testBaseURL+"/pages/"+testAccPageID+"/incident_templates",
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewJsonResponse(200, []apiclient.IncidentTemplate{*tmpl})
+		})
+
+	httpmock.RegisterResponder("PATCH", testBaseURL+"/pages/"+testAccPageID+"/incident_templates/"+templateID,
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.IncidentTemplateRequest
+			json.NewDecoder(req.Body).Decode(&body)
+			if body.Template.Name != "" {
+				tmpl.Name = body.Template.Name
+			}
+			if body.Template.Title != "" {
+				tmpl.Title = body.Template.Title
+			}
+			if body.Template.Body != "" {
+				tmpl.Body = body.Template.Body
+			}
+			if body.Template.UpdateStatus != "" {
+				tmpl.UpdateStatus = body.Template.UpdateStatus
+			}
+			return httpmock.NewJsonResponse(200, tmpl)
+		})
+
+	httpmock.RegisterResponder("DELETE", testBaseURL+"/pages/"+testAccPageID+"/incident_templates/"+templateID,
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewStringResponse(204, ""), nil
+		})
+
+	resource.UnitTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			// Create and Read
 			{

@@ -1,17 +1,89 @@
 package provider
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/jarcoal/httpmock"
+	"github.com/winebarrel/terraform-provider-statuspage/internal/apiclient"
 )
 
 func TestAccMetric_basic(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	providerID := "metrics-provider-for-metric-1"
+	metricsProvider := &apiclient.MetricsProvider{
+		ID:     providerID,
+		PageID: testAccPageID,
+		Type:   "Self",
+	}
+
+	metricID := "metric-id-1"
+	metric := &apiclient.Metric{
+		ID:                metricID,
+		PageID:            testAccPageID,
+		MetricsProviderID: providerID,
+	}
+
+	// Metrics Provider responders
+	httpmock.RegisterResponder("POST", testBaseURL+"/pages/"+testAccPageID+"/metrics_providers",
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.MetricsProviderRequest
+			json.NewDecoder(req.Body).Decode(&body)
+			metricsProvider.Type = body.MetricsProvider.Type
+			return httpmock.NewJsonResponse(201, metricsProvider)
+		})
+
+	httpmock.RegisterResponder("GET", testBaseURL+"/pages/"+testAccPageID+"/metrics_providers/"+providerID,
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewJsonResponse(200, metricsProvider)
+		})
+
+	httpmock.RegisterResponder("DELETE", testBaseURL+"/pages/"+testAccPageID+"/metrics_providers/"+providerID,
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewStringResponse(204, ""), nil
+		})
+
+	// Metric responders
+	httpmock.RegisterResponder("POST", testBaseURL+"/pages/"+testAccPageID+"/metrics_providers/"+providerID+"/metrics",
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.MetricRequest
+			json.NewDecoder(req.Body).Decode(&body)
+			metric.Name = body.Metric.Name
+			metric.Suffix = body.Metric.Suffix
+			return httpmock.NewJsonResponse(201, metric)
+		})
+
+	httpmock.RegisterResponder("GET", testBaseURL+"/pages/"+testAccPageID+"/metrics/"+metricID,
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewJsonResponse(200, metric)
+		})
+
+	httpmock.RegisterResponder("PATCH", testBaseURL+"/pages/"+testAccPageID+"/metrics/"+metricID,
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.MetricRequest
+			json.NewDecoder(req.Body).Decode(&body)
+			if body.Metric.Name != "" {
+				metric.Name = body.Metric.Name
+			}
+			if body.Metric.Suffix != "" {
+				metric.Suffix = body.Metric.Suffix
+			}
+			return httpmock.NewJsonResponse(200, metric)
+		})
+
+	httpmock.RegisterResponder("DELETE", testBaseURL+"/pages/"+testAccPageID+"/metrics/"+metricID,
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewStringResponse(204, ""), nil
+		})
+
+	resource.UnitTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			// Create and Read (creates a Self metrics provider first, then a metric)
 			{

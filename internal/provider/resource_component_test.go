@@ -1,17 +1,62 @@
 package provider
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/jarcoal/httpmock"
+	"github.com/winebarrel/terraform-provider-statuspage/internal/apiclient"
 )
 
 func TestAccComponent_basic(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	componentID := "component-id-1"
+	component := &apiclient.Component{
+		ID:              componentID,
+		PageID:          testAccPageID,
+		AutomationEmail: "component+test@notifications.statuspage.io",
+	}
+
+	httpmock.RegisterResponder("POST", testBaseURL+"/pages/"+testAccPageID+"/components",
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.ComponentRequest
+			json.NewDecoder(req.Body).Decode(&body)
+			component.Name = body.Component.Name
+			component.Status = body.Component.Status
+			return httpmock.NewJsonResponse(201, component)
+		})
+
+	httpmock.RegisterResponder("GET", testBaseURL+"/pages/"+testAccPageID+"/components/"+componentID,
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewJsonResponse(200, component)
+		})
+
+	httpmock.RegisterResponder("PATCH", testBaseURL+"/pages/"+testAccPageID+"/components/"+componentID,
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.ComponentRequest
+			json.NewDecoder(req.Body).Decode(&body)
+			if body.Component.Name != "" {
+				component.Name = body.Component.Name
+			}
+			if body.Component.Status != "" {
+				component.Status = body.Component.Status
+			}
+			return httpmock.NewJsonResponse(200, component)
+		})
+
+	httpmock.RegisterResponder("DELETE", testBaseURL+"/pages/"+testAccPageID+"/components/"+componentID,
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewStringResponse(204, ""), nil
+		})
+
+	resource.UnitTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			// Create and Read
 			{

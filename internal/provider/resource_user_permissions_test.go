@@ -1,22 +1,76 @@
 package provider
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/jarcoal/httpmock"
+	"github.com/winebarrel/terraform-provider-statuspage/internal/apiclient"
 )
 
 func TestAccUserPermissions_basic(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		PreCheck: func() {
-			testAccPreCheck(t)
-			if testAccOrganizationID == "" {
-				t.Skip("STATUSPAGE_ORGANIZATION_ID must be set for user permissions acceptance tests")
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	userID := "user-perm-id-1"
+	user := &apiclient.User{
+		ID:             userID,
+		OrganizationID: testAccOrganizationID,
+	}
+
+	permissions := &apiclient.Permissions{
+		UserID: userID,
+		Pages:  map[string]string{},
+	}
+
+	// User responders
+	httpmock.RegisterResponder("POST", testBaseURL+"/organizations/"+testAccOrganizationID+"/users",
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.UserRequest
+			json.NewDecoder(req.Body).Decode(&body)
+			user.Email = body.User.Email
+			user.FirstName = body.User.FirstName
+			user.LastName = body.User.LastName
+			return httpmock.NewJsonResponse(201, user)
+		})
+
+	// GET users uses list endpoint
+	httpmock.RegisterResponder("GET", testBaseURL+"/organizations/"+testAccOrganizationID+"/users",
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewJsonResponse(200, []apiclient.User{*user})
+		})
+
+	httpmock.RegisterResponder("DELETE", testBaseURL+"/organizations/"+testAccOrganizationID+"/users/"+userID,
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewStringResponse(204, ""), nil
+		})
+
+	// Permissions responders
+	httpmock.RegisterResponder("PUT", testBaseURL+"/organizations/"+testAccOrganizationID+"/permissions/"+userID,
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.PermissionsRequest
+			json.NewDecoder(req.Body).Decode(&body)
+			pages := make(map[string]string)
+			for k, v := range body.Pages {
+				if len(v) > 0 {
+					pages[k] = v[0]
+				}
 			}
-		},
+			permissions.Pages = pages
+			return httpmock.NewJsonResponse(200, permissions)
+		})
+
+	httpmock.RegisterResponder("GET", testBaseURL+"/organizations/"+testAccOrganizationID+"/permissions/"+userID,
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewJsonResponse(200, permissions)
+		})
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read (creates a user first, then sets permissions)
 			{
@@ -28,10 +82,11 @@ func TestAccUserPermissions_basic(t *testing.T) {
 			},
 			// Import
 			{
-				ResourceName:      "statuspage_user_permissions.test",
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateIdFunc: importStateIDFuncUserPermissions("statuspage_user_permissions.test"),
+				ResourceName:                         "statuspage_user_permissions.test",
+				ImportState:                          true,
+				ImportStateVerify:                     true,
+				ImportStateVerifyIdentifierAttribute:  "user_id",
+				ImportStateIdFunc:                     importStateIDFuncUserPermissions("statuspage_user_permissions.test"),
 			},
 			// Update permissions
 			{

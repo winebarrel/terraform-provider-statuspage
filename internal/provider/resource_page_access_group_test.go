@@ -1,17 +1,57 @@
 package provider
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/jarcoal/httpmock"
+	"github.com/winebarrel/terraform-provider-statuspage/internal/apiclient"
 )
 
 func TestAccPageAccessGroup_basic(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	groupID := "page-access-group-id-1"
+	group := &apiclient.PageAccessGroup{
+		ID:     groupID,
+		PageID: testAccPageID,
+	}
+
+	httpmock.RegisterResponder("POST", testBaseURL+"/pages/"+testAccPageID+"/page_access_groups",
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.PageAccessGroupRequest
+			json.NewDecoder(req.Body).Decode(&body)
+			group.Name = body.PageAccessGroup.Name
+			return httpmock.NewJsonResponse(201, group)
+		})
+
+	httpmock.RegisterResponder("GET", testBaseURL+"/pages/"+testAccPageID+"/page_access_groups/"+groupID,
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewJsonResponse(200, group)
+		})
+
+	httpmock.RegisterResponder("PATCH", testBaseURL+"/pages/"+testAccPageID+"/page_access_groups/"+groupID,
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.PageAccessGroupRequest
+			json.NewDecoder(req.Body).Decode(&body)
+			if body.PageAccessGroup.Name != "" {
+				group.Name = body.PageAccessGroup.Name
+			}
+			return httpmock.NewJsonResponse(200, group)
+		})
+
+	httpmock.RegisterResponder("DELETE", testBaseURL+"/pages/"+testAccPageID+"/page_access_groups/"+groupID,
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewStringResponse(204, ""), nil
+		})
+
+	resource.UnitTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			// Create and Read
 			{

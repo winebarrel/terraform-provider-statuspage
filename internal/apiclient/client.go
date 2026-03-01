@@ -15,6 +15,8 @@ const (
 	DefaultBaseURL = "https://api.statuspage.io/v1"
 )
 
+var RateLimitInterval = time.Second
+
 type APIError struct {
 	StatusCode int
 	Message    string
@@ -41,11 +43,14 @@ func NewClient(apiKey string) *Client {
 }
 
 func (c *Client) rateLimit() {
+	if RateLimitInterval <= 0 {
+		return
+	}
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	elapsed := time.Since(c.lastReq)
-	if elapsed < time.Second {
-		time.Sleep(time.Second - elapsed)
+	if elapsed < RateLimitInterval {
+		time.Sleep(RateLimitInterval - elapsed)
 	}
 	c.lastReq = time.Now()
 }

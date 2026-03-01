@@ -1,17 +1,67 @@
 package provider
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/jarcoal/httpmock"
+	"github.com/winebarrel/terraform-provider-statuspage/internal/apiclient"
 )
 
 func TestAccIncident_basic(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	incidentID := "incident-id-1"
+	incident := &apiclient.Incident{
+		ID:                   incidentID,
+		PageID:               testAccPageID,
+		Shortlink:            "https://stspg.io/test123",
+		DeliverNotifications: true,
+	}
+
+	httpmock.RegisterResponder("POST", testBaseURL+"/pages/"+testAccPageID+"/incidents",
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.IncidentRequest
+			json.NewDecoder(req.Body).Decode(&body)
+			incident.Name = body.Incident.Name
+			incident.Status = body.Incident.Status
+			incident.Body = body.Incident.Body
+			return httpmock.NewJsonResponse(201, incident)
+		})
+
+	httpmock.RegisterResponder("GET", testBaseURL+"/pages/"+testAccPageID+"/incidents/"+incidentID,
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewJsonResponse(200, incident)
+		})
+
+	httpmock.RegisterResponder("PATCH", testBaseURL+"/pages/"+testAccPageID+"/incidents/"+incidentID,
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.IncidentRequest
+			json.NewDecoder(req.Body).Decode(&body)
+			if body.Incident.Name != "" {
+				incident.Name = body.Incident.Name
+			}
+			if body.Incident.Status != "" {
+				incident.Status = body.Incident.Status
+			}
+			if body.Incident.Body != "" {
+				incident.Body = body.Incident.Body
+			}
+			return httpmock.NewJsonResponse(200, incident)
+		})
+
+	httpmock.RegisterResponder("DELETE", testBaseURL+"/pages/"+testAccPageID+"/incidents/"+incidentID,
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewStringResponse(204, ""), nil
+		})
+
+	resource.UnitTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			// Create and Read
 			{

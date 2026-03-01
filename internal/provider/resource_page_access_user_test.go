@@ -1,17 +1,61 @@
 package provider
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/jarcoal/httpmock"
+	"github.com/winebarrel/terraform-provider-statuspage/internal/apiclient"
 )
 
 func TestAccPageAccessUser_basic(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	userID := "page-access-user-id-1"
+	user := &apiclient.PageAccessUser{
+		ID:     userID,
+		PageID: testAccPageID,
+	}
+
+	httpmock.RegisterResponder("POST", testBaseURL+"/pages/"+testAccPageID+"/page_access_users",
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.PageAccessUserRequest
+			json.NewDecoder(req.Body).Decode(&body)
+			user.ExternalLogin = body.PageAccessUser.ExternalLogin
+			user.ExternalEmail = body.PageAccessUser.ExternalEmail
+			return httpmock.NewJsonResponse(201, user)
+		})
+
+	httpmock.RegisterResponder("GET", testBaseURL+"/pages/"+testAccPageID+"/page_access_users/"+userID,
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewJsonResponse(200, user)
+		})
+
+	httpmock.RegisterResponder("PATCH", testBaseURL+"/pages/"+testAccPageID+"/page_access_users/"+userID,
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.PageAccessUserRequest
+			json.NewDecoder(req.Body).Decode(&body)
+			if body.PageAccessUser.ExternalLogin != "" {
+				user.ExternalLogin = body.PageAccessUser.ExternalLogin
+			}
+			if body.PageAccessUser.ExternalEmail != "" {
+				user.ExternalEmail = body.PageAccessUser.ExternalEmail
+			}
+			return httpmock.NewJsonResponse(200, user)
+		})
+
+	httpmock.RegisterResponder("DELETE", testBaseURL+"/pages/"+testAccPageID+"/page_access_users/"+userID,
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewStringResponse(204, ""), nil
+		})
+
+	resource.UnitTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			// Create and Read
 			{
