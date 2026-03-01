@@ -15,6 +15,5 @@ lint:
 clean:
 	rm -f terraform-provider-statuspage
 
-.PHONY: docs
 docs:
 	go generate ./...
