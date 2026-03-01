@@ -16,18 +16,18 @@ func TestAccStatusEmbedConfig_basic(t *testing.T) {
 	defer httpmock.DeactivateAndReset()
 
 	config := &apiclient.StatusEmbedConfig{
-		PageID:                  testAccPageID,
+		PageID:                  "test-page-id",
 		Position:                "bl",
 		IncidentBackgroundColor: "#FF0000",
 		IncidentTextColor:       "#FFFFFF",
 	}
 
-	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/status_embed_config",
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/test-page-id/status_embed_config",
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewJsonResponse(200, config)
 		})
 
-	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/status_embed_config",
+	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/test-page-id/status_embed_config",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.StatusEmbedConfigRequest
 			json.NewDecoder(req.Body).Decode(&body)
@@ -45,7 +45,7 @@ func TestAccStatusEmbedConfig_basic(t *testing.T) {
 				Config:             testAccStatusEmbedConfigConfig("bl"),
 				ResourceName:       "statuspage_status_embed_config.test",
 				ImportState:        true,
-				ImportStateId:      testAccPageID,
+				ImportStateId:      "test-page-id",
 				ImportStateVerify:  false,
 				ImportStatePersist: true,
 			},
@@ -68,5 +68,5 @@ resource "statuspage_status_embed_config" "test" {
   page_id  = %q
   position = %q
 }
-`, testAccPageID, position)
+`, "test-page-id", position)
 }

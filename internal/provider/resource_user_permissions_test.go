@@ -116,7 +116,7 @@ resource "statuspage_user_permissions" "test" {
     %[2]q = %[3]q
   }
 }
-`, testAccOrganizationID, testAccPageID, permission)
+`, testAccOrganizationID, "test-page-id", permission)
 }
 
 func importStateIDFuncUserPermissions(resourceName string) resource.ImportStateIdFunc {

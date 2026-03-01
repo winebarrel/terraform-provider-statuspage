@@ -19,10 +19,10 @@ func TestAccPageAccessGroup_basic(t *testing.T) {
 	groupID := "page-access-group-id-1"
 	group := &apiclient.PageAccessGroup{
 		ID:     groupID,
-		PageID: testAccPageID,
+		PageID: "test-page-id",
 	}
 
-	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/page_access_groups",
+	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/test-page-id/page_access_groups",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.PageAccessGroupRequest
 			json.NewDecoder(req.Body).Decode(&body)
@@ -30,12 +30,12 @@ func TestAccPageAccessGroup_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(201, group)
 		})
 
-	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/page_access_groups/"+groupID,
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/test-page-id/page_access_groups/"+groupID,
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewJsonResponse(200, group)
 		})
 
-	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/page_access_groups/"+groupID,
+	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/test-page-id/page_access_groups/"+groupID,
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.PageAccessGroupRequest
 			json.NewDecoder(req.Body).Decode(&body)
@@ -45,7 +45,7 @@ func TestAccPageAccessGroup_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(200, group)
 		})
 
-	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/page_access_groups/"+groupID,
+	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/test-page-id/page_access_groups/"+groupID,
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewStringResponse(204, ""), nil
 		})
@@ -85,7 +85,7 @@ resource "statuspage_page_access_group" "test" {
   page_id = %q
   name    = %q
 }
-`, testAccPageID, name)
+`, "test-page-id", name)
 }
 
 func importStateIDFuncPageAccessGroup(resourceName string) resource.ImportStateIdFunc {

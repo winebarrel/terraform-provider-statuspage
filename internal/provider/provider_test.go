@@ -12,7 +12,6 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 	"statuspage": providerserver.NewProtocol6WithError(New("test")()),
 }
 
-var testAccPageID = "test-page-id"
 var testAccOrganizationID = "test-org-id"
 
 func init() {

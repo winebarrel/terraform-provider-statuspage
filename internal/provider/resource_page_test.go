@@ -16,17 +16,17 @@ func TestAccPage_basic(t *testing.T) {
 	defer httpmock.DeactivateAndReset()
 
 	page := &apiclient.Page{
-		ID:        testAccPageID,
+		ID:        "test-page-id",
 		Name:      "existing-page",
 		Subdomain: "test-subdomain",
 	}
 
-	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/"+testAccPageID,
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/test-page-id",
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewJsonResponse(200, page)
 		})
 
-	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/"+testAccPageID,
+	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/test-page-id",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.PageRequest
 			json.NewDecoder(req.Body).Decode(&body)
@@ -44,7 +44,7 @@ func TestAccPage_basic(t *testing.T) {
 				Config:             testAccPageConfig("tf-test-page"),
 				ResourceName:       "statuspage_page.test",
 				ImportState:        true,
-				ImportStateId:      testAccPageID,
+				ImportStateId:      "test-page-id",
 				ImportStateVerify:  false,
 				ImportStatePersist: true,
 			},
@@ -53,7 +53,7 @@ func TestAccPage_basic(t *testing.T) {
 				Config: testAccPageConfig("tf-test-page-updated"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspage_page.test", "name", "tf-test-page-updated"),
-					resource.TestCheckResourceAttr("statuspage_page.test", "id", testAccPageID),
+					resource.TestCheckResourceAttr("statuspage_page.test", "id", "test-page-id"),
 					resource.TestCheckResourceAttrSet("statuspage_page.test", "subdomain"),
 				),
 			},
@@ -67,5 +67,5 @@ resource "statuspage_page" "test" {
   id   = %q
   name = %q
 }
-`, testAccPageID, name)
+`, "test-page-id", name)
 }

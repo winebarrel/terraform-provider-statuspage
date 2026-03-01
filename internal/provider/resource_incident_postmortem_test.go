@@ -19,7 +19,7 @@ func TestAccIncidentPostmortem_basic(t *testing.T) {
 	incidentID := "postmortem-incident-id-1"
 	incident := &apiclient.Incident{
 		ID:                   incidentID,
-		PageID:               testAccPageID,
+		PageID:               "test-page-id",
 		Name:                 "tf-test-postmortem-incident",
 		Status:               "resolved",
 		Body:                 "Incident for postmortem testing.",
@@ -29,7 +29,7 @@ func TestAccIncidentPostmortem_basic(t *testing.T) {
 	postmortem := &apiclient.Postmortem{}
 
 	// Incident responders
-	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/incidents",
+	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/test-page-id/incidents",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.IncidentRequest
 			json.NewDecoder(req.Body).Decode(&body)
@@ -39,18 +39,18 @@ func TestAccIncidentPostmortem_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(201, incident)
 		})
 
-	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/incidents/"+incidentID,
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/test-page-id/incidents/"+incidentID,
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewJsonResponse(200, incident)
 		})
 
-	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/incidents/"+incidentID,
+	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/test-page-id/incidents/"+incidentID,
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewStringResponse(204, ""), nil
 		})
 
 	// Postmortem responders
-	httpmock.RegisterResponder("PUT", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/incidents/"+incidentID+"/postmortem",
+	httpmock.RegisterResponder("PUT", "https://api.statuspage.io/v1/pages/test-page-id/incidents/"+incidentID+"/postmortem",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.PostmortemRequest
 			json.NewDecoder(req.Body).Decode(&body)
@@ -60,12 +60,12 @@ func TestAccIncidentPostmortem_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(200, postmortem)
 		})
 
-	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/incidents/"+incidentID+"/postmortem",
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/test-page-id/incidents/"+incidentID+"/postmortem",
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewJsonResponse(200, postmortem)
 		})
 
-	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/incidents/"+incidentID+"/postmortem",
+	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/test-page-id/incidents/"+incidentID+"/postmortem",
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewStringResponse(204, ""), nil
 		})
@@ -116,7 +116,7 @@ resource "statuspage_incident_postmortem" "test" {
   notify_subscribers = false
   notify_twitter     = false
 }
-`, testAccPageID, body)
+`, "test-page-id", body)
 }
 
 func importStateIDFuncPostmortem(resourceName string) resource.ImportStateIdFunc {

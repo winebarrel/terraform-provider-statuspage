@@ -19,10 +19,10 @@ func TestAccMetricsProvider_basic(t *testing.T) {
 	providerID := "metrics-provider-id-1"
 	metricsProvider := &apiclient.MetricsProvider{
 		ID:     providerID,
-		PageID: testAccPageID,
+		PageID: "test-page-id",
 	}
 
-	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/metrics_providers",
+	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/test-page-id/metrics_providers",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.MetricsProviderRequest
 			json.NewDecoder(req.Body).Decode(&body)
@@ -31,12 +31,12 @@ func TestAccMetricsProvider_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(201, metricsProvider)
 		})
 
-	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/metrics_providers/"+providerID,
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/test-page-id/metrics_providers/"+providerID,
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewJsonResponse(200, metricsProvider)
 		})
 
-	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/metrics_providers/"+providerID,
+	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/test-page-id/metrics_providers/"+providerID,
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.MetricsProviderRequest
 			json.NewDecoder(req.Body).Decode(&body)
@@ -49,7 +49,7 @@ func TestAccMetricsProvider_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(200, metricsProvider)
 		})
 
-	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/metrics_providers/"+providerID,
+	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/test-page-id/metrics_providers/"+providerID,
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewStringResponse(204, ""), nil
 		})
@@ -92,7 +92,7 @@ resource "statuspage_metrics_provider" "test" {
   page_id = %q
   type    = %q
 }
-`, testAccPageID, providerType)
+`, "test-page-id", providerType)
 }
 
 func testAccMetricsProviderConfigWithEmail(providerType, email string) string {
@@ -102,7 +102,7 @@ resource "statuspage_metrics_provider" "test" {
   type    = %q
   email   = %q
 }
-`, testAccPageID, providerType, email)
+`, "test-page-id", providerType, email)
 }
 
 func importStateIDFuncMetricsProvider(resourceName string) resource.ImportStateIdFunc {

@@ -19,12 +19,12 @@ func TestAccIncident_basic(t *testing.T) {
 	incidentID := "incident-id-1"
 	incident := &apiclient.Incident{
 		ID:                   incidentID,
-		PageID:               testAccPageID,
+		PageID:               "test-page-id",
 		Shortlink:            "https://stspg.io/test123",
 		DeliverNotifications: true,
 	}
 
-	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/incidents",
+	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/test-page-id/incidents",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.IncidentRequest
 			json.NewDecoder(req.Body).Decode(&body)
@@ -34,12 +34,12 @@ func TestAccIncident_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(201, incident)
 		})
 
-	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/incidents/"+incidentID,
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/test-page-id/incidents/"+incidentID,
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewJsonResponse(200, incident)
 		})
 
-	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/incidents/"+incidentID,
+	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/test-page-id/incidents/"+incidentID,
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.IncidentRequest
 			json.NewDecoder(req.Body).Decode(&body)
@@ -55,7 +55,7 @@ func TestAccIncident_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(200, incident)
 		})
 
-	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/incidents/"+incidentID,
+	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/test-page-id/incidents/"+incidentID,
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewStringResponse(204, ""), nil
 		})
@@ -102,7 +102,7 @@ resource "statuspage_incident" "test" {
   status  = %q
   body    = %q
 }
-`, testAccPageID, name, status, body)
+`, "test-page-id", name, status, body)
 }
 
 func importStateIDFuncIncident(resourceName string) resource.ImportStateIdFunc {

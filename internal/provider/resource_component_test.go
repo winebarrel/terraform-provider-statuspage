@@ -19,11 +19,11 @@ func TestAccComponent_basic(t *testing.T) {
 	componentID := "component-id-1"
 	component := &apiclient.Component{
 		ID:              componentID,
-		PageID:          testAccPageID,
+		PageID:          "test-page-id",
 		AutomationEmail: "component+test@notifications.statuspage.io",
 	}
 
-	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/components",
+	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/test-page-id/components",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.ComponentRequest
 			json.NewDecoder(req.Body).Decode(&body)
@@ -32,12 +32,12 @@ func TestAccComponent_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(201, component)
 		})
 
-	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/components/"+componentID,
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/test-page-id/components/"+componentID,
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewJsonResponse(200, component)
 		})
 
-	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/components/"+componentID,
+	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/test-page-id/components/"+componentID,
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.ComponentRequest
 			json.NewDecoder(req.Body).Decode(&body)
@@ -50,7 +50,7 @@ func TestAccComponent_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(200, component)
 		})
 
-	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/components/"+componentID,
+	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/test-page-id/components/"+componentID,
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewStringResponse(204, ""), nil
 		})
@@ -94,7 +94,7 @@ resource "statuspage_component" "test" {
   name    = %q
   status  = %q
 }
-`, testAccPageID, name, status)
+`, "test-page-id", name, status)
 }
 
 func importStateIDFunc(resourceName string) resource.ImportStateIdFunc {

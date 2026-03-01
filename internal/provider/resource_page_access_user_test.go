@@ -19,10 +19,10 @@ func TestAccPageAccessUser_basic(t *testing.T) {
 	userID := "page-access-user-id-1"
 	user := &apiclient.PageAccessUser{
 		ID:     userID,
-		PageID: testAccPageID,
+		PageID: "test-page-id",
 	}
 
-	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/page_access_users",
+	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/test-page-id/page_access_users",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.PageAccessUserRequest
 			json.NewDecoder(req.Body).Decode(&body)
@@ -31,12 +31,12 @@ func TestAccPageAccessUser_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(201, user)
 		})
 
-	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/page_access_users/"+userID,
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/test-page-id/page_access_users/"+userID,
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewJsonResponse(200, user)
 		})
 
-	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/page_access_users/"+userID,
+	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/test-page-id/page_access_users/"+userID,
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.PageAccessUserRequest
 			json.NewDecoder(req.Body).Decode(&body)
@@ -49,7 +49,7 @@ func TestAccPageAccessUser_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(200, user)
 		})
 
-	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/page_access_users/"+userID,
+	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/test-page-id/page_access_users/"+userID,
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewStringResponse(204, ""), nil
 		})
@@ -92,7 +92,7 @@ resource "statuspage_page_access_user" "test" {
   external_login = %q
   external_email = %q
 }
-`, testAccPageID, login, email)
+`, "test-page-id", login, email)
 }
 
 func importStateIDFuncPageAccessUser(resourceName string) resource.ImportStateIdFunc {

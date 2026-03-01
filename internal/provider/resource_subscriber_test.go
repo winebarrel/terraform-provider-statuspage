@@ -19,11 +19,11 @@ func TestAccSubscriber_basic(t *testing.T) {
 	subscriberID := "subscriber-id-1"
 	subscriber := &apiclient.Subscriber{
 		ID:     subscriberID,
-		PageID: testAccPageID,
+		PageID: "test-page-id",
 		Mode:   "email",
 	}
 
-	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/subscribers",
+	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/test-page-id/subscribers",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.SubscriberRequest
 			json.NewDecoder(req.Body).Decode(&body)
@@ -31,12 +31,12 @@ func TestAccSubscriber_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(201, subscriber)
 		})
 
-	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/subscribers/"+subscriberID,
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/test-page-id/subscribers/"+subscriberID,
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewJsonResponse(200, subscriber)
 		})
 
-	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/subscribers/"+subscriberID,
+	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/test-page-id/subscribers/"+subscriberID,
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.SubscriberRequest
 			json.NewDecoder(req.Body).Decode(&body)
@@ -46,7 +46,7 @@ func TestAccSubscriber_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(200, subscriber)
 		})
 
-	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/"+testAccPageID+"/subscribers/"+subscriberID,
+	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/test-page-id/subscribers/"+subscriberID,
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewStringResponse(204, ""), nil
 		})
@@ -90,7 +90,7 @@ resource "statuspage_subscriber" "test" {
   email                        = %q
   skip_confirmation_notification = true
 }
-`, testAccPageID, email)
+`, "test-page-id", email)
 }
 
 func importStateIDFuncSubscriber(resourceName string) resource.ImportStateIdFunc {
