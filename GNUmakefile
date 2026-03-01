@@ -1,4 +1,4 @@
-.PHONY: build vet test testacc lint clean
+.PHONY: build vet test lint clean
 
 build: vet
 	go build
@@ -8,9 +8,6 @@ vet:
 
 test:
 	go test -v -count=1 ./...
-
-testacc:
-	TF_ACC=1 go test -v -count=1 -timeout 120m ./internal/provider/
 
 lint:
 	golangci-lint run
