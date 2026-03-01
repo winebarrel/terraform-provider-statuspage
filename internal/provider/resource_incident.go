@@ -341,13 +341,6 @@ func (r *incidentResource) mapToState(ctx context.Context, state *incidentResour
 	}
 }
 
-func stringValueOrNull(s string) types.String {
-	if s == "" {
-		return types.StringNull()
-	}
-	return types.StringValue(s)
-}
-
 func setBoolPtr(dst **bool, src types.Bool) {
 	if !src.IsNull() && !src.IsUnknown() {
 		v := src.ValueBool()
