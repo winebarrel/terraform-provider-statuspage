@@ -16,9 +16,8 @@ func TestAccIncident_basic(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	incidentID := "incident-id-1"
 	incident := &apiclient.Incident{
-		ID:                   incidentID,
+		ID:                   "incident-id-1",
 		PageID:               "test-page-id",
 		Shortlink:            "https://stspg.io/test123",
 		DeliverNotifications: true,
@@ -34,12 +33,12 @@ func TestAccIncident_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(201, incident)
 		})
 
-	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/test-page-id/incidents/"+incidentID,
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/test-page-id/incidents/incident-id-1",
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewJsonResponse(200, incident)
 		})
 
-	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/test-page-id/incidents/"+incidentID,
+	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/test-page-id/incidents/incident-id-1",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.IncidentRequest
 			_ = json.NewDecoder(req.Body).Decode(&body)
@@ -55,7 +54,7 @@ func TestAccIncident_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(200, incident)
 		})
 
-	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/test-page-id/incidents/"+incidentID,
+	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/test-page-id/incidents/incident-id-1",
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewStringResponse(204, ""), nil
 		})
