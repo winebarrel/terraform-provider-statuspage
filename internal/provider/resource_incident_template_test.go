@@ -16,9 +16,8 @@ func TestAccIncidentTemplate_basic(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	templateID := "incident-template-id-1"
 	tmpl := &apiclient.IncidentTemplate{
-		ID:     templateID,
+		ID:     "incident-template-id-1",
 		PageID: "test-page-id",
 	}
 
@@ -39,7 +38,7 @@ func TestAccIncidentTemplate_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(200, []apiclient.IncidentTemplate{*tmpl})
 		})
 
-	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/test-page-id/incident_templates/"+templateID,
+	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/test-page-id/incident_templates/incident-template-id-1",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.IncidentTemplateRequest
 			_ = json.NewDecoder(req.Body).Decode(&body)
@@ -58,7 +57,7 @@ func TestAccIncidentTemplate_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(200, tmpl)
 		})
 
-	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/test-page-id/incident_templates/"+templateID,
+	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/test-page-id/incident_templates/incident-template-id-1",
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewStringResponse(204, ""), nil
 		})
