@@ -12,7 +12,7 @@ import (
 	"github.com/winebarrel/terraform-provider-statuspage/internal/apiclient"
 )
 
-func TestAccMetricsProvider_basic(t *testing.T) {
+func TestMetricsProvider_basic(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
@@ -54,11 +54,11 @@ func TestAccMetricsProvider_basic(t *testing.T) {
 		})
 
 	resource.UnitTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read
 			{
-				Config: testAccMetricsProviderConfig("Self"),
+				Config: testMetricsProviderConfig("Self"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspage_metrics_provider.test", "type", "Self"),
 					resource.TestCheckResourceAttrSet("statuspage_metrics_provider.test", "id"),
@@ -75,7 +75,7 @@ func TestAccMetricsProvider_basic(t *testing.T) {
 			},
 			// Update (change type to Self - effectively a no-op re-apply since type is the same)
 			{
-				Config: testAccMetricsProviderConfigWithEmail("Self", "tf-test@example.com"),
+				Config: testMetricsProviderConfigWithEmail("Self", "tf-test@example.com"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspage_metrics_provider.test", "type", "Self"),
 					resource.TestCheckResourceAttr("statuspage_metrics_provider.test", "email", "tf-test@example.com"),
@@ -85,7 +85,7 @@ func TestAccMetricsProvider_basic(t *testing.T) {
 	})
 }
 
-func testAccMetricsProviderConfig(providerType string) string {
+func testMetricsProviderConfig(providerType string) string {
 	return fmt.Sprintf(`
 resource "statuspage_metrics_provider" "test" {
   page_id = %q
@@ -94,7 +94,7 @@ resource "statuspage_metrics_provider" "test" {
 `, "test-page-id", providerType)
 }
 
-func testAccMetricsProviderConfigWithEmail(providerType, email string) string {
+func testMetricsProviderConfigWithEmail(providerType, email string) string {
 	return fmt.Sprintf(`
 resource "statuspage_metrics_provider" "test" {
   page_id = %q

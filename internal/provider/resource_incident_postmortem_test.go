@@ -12,7 +12,7 @@ import (
 	"github.com/winebarrel/terraform-provider-statuspage/internal/apiclient"
 )
 
-func TestAccIncidentPostmortem_basic(t *testing.T) {
+func TestIncidentPostmortem_basic(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
@@ -70,11 +70,11 @@ func TestAccIncidentPostmortem_basic(t *testing.T) {
 		})
 
 	resource.UnitTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read (creates an incident first, then attaches postmortem)
 			{
-				Config: testAccIncidentPostmortemConfig("Initial postmortem body"),
+				Config: testIncidentPostmortemConfig("Initial postmortem body"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspage_incident_postmortem.test", "body", "Initial postmortem body"),
 					resource.TestCheckResourceAttrSet("statuspage_incident_postmortem.test", "incident_id"),
@@ -90,7 +90,7 @@ func TestAccIncidentPostmortem_basic(t *testing.T) {
 			},
 			// Update
 			{
-				Config: testAccIncidentPostmortemConfig("Updated postmortem body"),
+				Config: testIncidentPostmortemConfig("Updated postmortem body"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspage_incident_postmortem.test", "body", "Updated postmortem body"),
 				),
@@ -99,7 +99,7 @@ func TestAccIncidentPostmortem_basic(t *testing.T) {
 	})
 }
 
-func testAccIncidentPostmortemConfig(body string) string {
+func testIncidentPostmortemConfig(body string) string {
 	return fmt.Sprintf(`
 resource "statuspage_incident" "postmortem_incident" {
   page_id = %[1]q

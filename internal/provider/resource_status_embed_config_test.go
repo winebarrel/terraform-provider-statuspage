@@ -11,7 +11,7 @@ import (
 	"github.com/winebarrel/terraform-provider-statuspage/internal/apiclient"
 )
 
-func TestAccStatusEmbedConfig_basic(t *testing.T) {
+func TestStatusEmbedConfig_basic(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
@@ -38,11 +38,11 @@ func TestAccStatusEmbedConfig_basic(t *testing.T) {
 		})
 
 	resource.UnitTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Import existing status embed config
 			{
-				Config:             testAccStatusEmbedConfigConfig("bl"),
+				Config:             testStatusEmbedConfigConfig("bl"),
 				ResourceName:       "statuspage_status_embed_config.test",
 				ImportState:        true,
 				ImportStateId:      "test-page-id",
@@ -51,7 +51,7 @@ func TestAccStatusEmbedConfig_basic(t *testing.T) {
 			},
 			// Update
 			{
-				Config: testAccStatusEmbedConfigConfig("br"),
+				Config: testStatusEmbedConfigConfig("br"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspage_status_embed_config.test", "position", "br"),
 					resource.TestCheckResourceAttrSet("statuspage_status_embed_config.test", "incident_background_color"),
@@ -62,7 +62,7 @@ func TestAccStatusEmbedConfig_basic(t *testing.T) {
 	})
 }
 
-func testAccStatusEmbedConfigConfig(position string) string {
+func testStatusEmbedConfigConfig(position string) string {
 	return fmt.Sprintf(`
 resource "statuspage_status_embed_config" "test" {
   page_id  = %q

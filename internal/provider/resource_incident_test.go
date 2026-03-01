@@ -12,7 +12,7 @@ import (
 	"github.com/winebarrel/terraform-provider-statuspage/internal/apiclient"
 )
 
-func TestAccIncident_basic(t *testing.T) {
+func TestIncident_basic(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
@@ -60,11 +60,11 @@ func TestAccIncident_basic(t *testing.T) {
 		})
 
 	resource.UnitTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read
 			{
-				Config: testAccIncidentConfig("tf-test-incident", "investigating", "Initial investigation"),
+				Config: testIncidentConfig("tf-test-incident", "investigating", "Initial investigation"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspage_incident.test", "name", "tf-test-incident"),
 					resource.TestCheckResourceAttr("statuspage_incident.test", "status", "investigating"),
@@ -82,7 +82,7 @@ func TestAccIncident_basic(t *testing.T) {
 			},
 			// Update
 			{
-				Config: testAccIncidentConfig("tf-test-incident-updated", "identified", "Issue has been identified"),
+				Config: testIncidentConfig("tf-test-incident-updated", "identified", "Issue has been identified"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspage_incident.test", "name", "tf-test-incident-updated"),
 					resource.TestCheckResourceAttr("statuspage_incident.test", "status", "identified"),
@@ -93,7 +93,7 @@ func TestAccIncident_basic(t *testing.T) {
 	})
 }
 
-func testAccIncidentConfig(name, status, body string) string {
+func testIncidentConfig(name, status, body string) string {
 	return fmt.Sprintf(`
 resource "statuspage_incident" "test" {
   page_id = %q

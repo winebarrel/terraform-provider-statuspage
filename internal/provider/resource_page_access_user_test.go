@@ -12,7 +12,7 @@ import (
 	"github.com/winebarrel/terraform-provider-statuspage/internal/apiclient"
 )
 
-func TestAccPageAccessUser_basic(t *testing.T) {
+func TestPageAccessUser_basic(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
@@ -54,11 +54,11 @@ func TestAccPageAccessUser_basic(t *testing.T) {
 		})
 
 	resource.UnitTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read
 			{
-				Config: testAccPageAccessUserConfig("tf-test-pau", "tf-test-pau@example.com"),
+				Config: testPageAccessUserConfig("tf-test-pau", "tf-test-pau@example.com"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspage_page_access_user.test", "external_login", "tf-test-pau"),
 					resource.TestCheckResourceAttr("statuspage_page_access_user.test", "external_email", "tf-test-pau@example.com"),
@@ -74,7 +74,7 @@ func TestAccPageAccessUser_basic(t *testing.T) {
 			},
 			// Update
 			{
-				Config: testAccPageAccessUserConfig("tf-test-pau-updated", "tf-test-pau-updated@example.com"),
+				Config: testPageAccessUserConfig("tf-test-pau-updated", "tf-test-pau-updated@example.com"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspage_page_access_user.test", "external_login", "tf-test-pau-updated"),
 					resource.TestCheckResourceAttr("statuspage_page_access_user.test", "external_email", "tf-test-pau-updated@example.com"),
@@ -84,7 +84,7 @@ func TestAccPageAccessUser_basic(t *testing.T) {
 	})
 }
 
-func testAccPageAccessUserConfig(login, email string) string {
+func testPageAccessUserConfig(login, email string) string {
 	return fmt.Sprintf(`
 resource "statuspage_page_access_user" "test" {
   page_id        = %q

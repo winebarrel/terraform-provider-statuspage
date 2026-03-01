@@ -12,7 +12,7 @@ import (
 	"github.com/winebarrel/terraform-provider-statuspage/internal/apiclient"
 )
 
-func TestAccMetric_basic(t *testing.T) {
+func TestMetric_basic(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
@@ -82,11 +82,11 @@ func TestAccMetric_basic(t *testing.T) {
 		})
 
 	resource.UnitTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read (creates a Self metrics provider first, then a metric)
 			{
-				Config: testAccMetricConfig("tf-test-metric", "ms"),
+				Config: testMetricConfig("tf-test-metric", "ms"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspage_metric.test", "name", "tf-test-metric"),
 					resource.TestCheckResourceAttr("statuspage_metric.test", "suffix", "ms"),
@@ -103,7 +103,7 @@ func TestAccMetric_basic(t *testing.T) {
 			},
 			// Update
 			{
-				Config: testAccMetricConfig("tf-test-metric-updated", "req/s"),
+				Config: testMetricConfig("tf-test-metric-updated", "req/s"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspage_metric.test", "name", "tf-test-metric-updated"),
 					resource.TestCheckResourceAttr("statuspage_metric.test", "suffix", "req/s"),
@@ -113,7 +113,7 @@ func TestAccMetric_basic(t *testing.T) {
 	})
 }
 
-func testAccMetricConfig(name, suffix string) string {
+func testMetricConfig(name, suffix string) string {
 	return fmt.Sprintf(`
 resource "statuspage_metrics_provider" "metric_provider" {
   page_id = %[1]q

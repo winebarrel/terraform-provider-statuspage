@@ -12,7 +12,7 @@ import (
 	"github.com/winebarrel/terraform-provider-statuspage/internal/apiclient"
 )
 
-func TestAccIncidentTemplate_basic(t *testing.T) {
+func TestIncidentTemplate_basic(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
@@ -63,11 +63,11 @@ func TestAccIncidentTemplate_basic(t *testing.T) {
 		})
 
 	resource.UnitTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read
 			{
-				Config: testAccIncidentTemplateConfig("tf-test-template", "Test Incident", "investigating"),
+				Config: testIncidentTemplateConfig("tf-test-template", "Test Incident", "investigating"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspage_incident_template.test", "name", "tf-test-template"),
 					resource.TestCheckResourceAttr("statuspage_incident_template.test", "title", "Test Incident"),
@@ -84,7 +84,7 @@ func TestAccIncidentTemplate_basic(t *testing.T) {
 			},
 			// Update
 			{
-				Config: testAccIncidentTemplateConfig("tf-test-template-updated", "Updated Incident", "identified"),
+				Config: testIncidentTemplateConfig("tf-test-template-updated", "Updated Incident", "identified"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspage_incident_template.test", "name", "tf-test-template-updated"),
 					resource.TestCheckResourceAttr("statuspage_incident_template.test", "title", "Updated Incident"),
@@ -95,7 +95,7 @@ func TestAccIncidentTemplate_basic(t *testing.T) {
 	})
 }
 
-func testAccIncidentTemplateConfig(name, title, updateStatus string) string {
+func testIncidentTemplateConfig(name, title, updateStatus string) string {
 	return fmt.Sprintf(`
 resource "statuspage_incident_template" "test" {
   page_id       = %q

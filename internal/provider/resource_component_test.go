@@ -12,7 +12,7 @@ import (
 	"github.com/winebarrel/terraform-provider-statuspage/internal/apiclient"
 )
 
-func TestAccComponent_basic(t *testing.T) {
+func TestComponent_basic(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
@@ -55,11 +55,11 @@ func TestAccComponent_basic(t *testing.T) {
 		})
 
 	resource.UnitTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read
 			{
-				Config: testAccComponentConfig("tf-test-component", "operational"),
+				Config: testComponentConfig("tf-test-component", "operational"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspage_component.test", "name", "tf-test-component"),
 					resource.TestCheckResourceAttr("statuspage_component.test", "status", "operational"),
@@ -76,7 +76,7 @@ func TestAccComponent_basic(t *testing.T) {
 			},
 			// Update
 			{
-				Config: testAccComponentConfig("tf-test-component-updated", "degraded_performance"),
+				Config: testComponentConfig("tf-test-component-updated", "degraded_performance"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspage_component.test", "name", "tf-test-component-updated"),
 					resource.TestCheckResourceAttr("statuspage_component.test", "status", "degraded_performance"),
@@ -86,7 +86,7 @@ func TestAccComponent_basic(t *testing.T) {
 	})
 }
 
-func testAccComponentConfig(name, status string) string {
+func testComponentConfig(name, status string) string {
 	return fmt.Sprintf(`
 resource "statuspage_component" "test" {
   page_id = %q

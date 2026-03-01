@@ -11,7 +11,7 @@ import (
 	"github.com/winebarrel/terraform-provider-statuspage/internal/apiclient"
 )
 
-func TestAccPage_basic(t *testing.T) {
+func TestPage_basic(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
@@ -37,11 +37,11 @@ func TestAccPage_basic(t *testing.T) {
 		})
 
 	resource.UnitTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Import existing page
 			{
-				Config:             testAccPageConfig("tf-test-page"),
+				Config:             testPageConfig("tf-test-page"),
 				ResourceName:       "statuspage_page.test",
 				ImportState:        true,
 				ImportStateId:      "test-page-id",
@@ -50,7 +50,7 @@ func TestAccPage_basic(t *testing.T) {
 			},
 			// Update page name
 			{
-				Config: testAccPageConfig("tf-test-page-updated"),
+				Config: testPageConfig("tf-test-page-updated"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspage_page.test", "name", "tf-test-page-updated"),
 					resource.TestCheckResourceAttr("statuspage_page.test", "id", "test-page-id"),
@@ -61,7 +61,7 @@ func TestAccPage_basic(t *testing.T) {
 	})
 }
 
-func testAccPageConfig(name string) string {
+func testPageConfig(name string) string {
 	return fmt.Sprintf(`
 resource "statuspage_page" "test" {
   id   = %q

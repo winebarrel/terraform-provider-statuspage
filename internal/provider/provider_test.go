@@ -8,7 +8,7 @@ import (
 	"github.com/winebarrel/terraform-provider-statuspage/internal/apiclient"
 )
 
-var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
+var testProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
 	"statuspage": providerserver.NewProtocol6WithError(New("test")()),
 }
 

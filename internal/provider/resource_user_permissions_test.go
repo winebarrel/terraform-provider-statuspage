@@ -12,7 +12,7 @@ import (
 	"github.com/winebarrel/terraform-provider-statuspage/internal/apiclient"
 )
 
-func TestAccUserPermissions_basic(t *testing.T) {
+func TestUserPermissions_basic(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
@@ -69,11 +69,11 @@ func TestAccUserPermissions_basic(t *testing.T) {
 		})
 
 	resource.UnitTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read (creates a user first, then sets permissions)
 			{
-				Config: testAccUserPermissionsConfig("page_configuration"),
+				Config: testUserPermissionsConfig("page_configuration"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("statuspage_user_permissions.test", "user_id"),
 					resource.TestCheckResourceAttrSet("statuspage_user_permissions.test", "organization_id"),
@@ -89,7 +89,7 @@ func TestAccUserPermissions_basic(t *testing.T) {
 			},
 			// Update permissions
 			{
-				Config: testAccUserPermissionsConfig("incident_manager"),
+				Config: testUserPermissionsConfig("incident_manager"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("statuspage_user_permissions.test", "user_id"),
 				),
@@ -98,7 +98,7 @@ func TestAccUserPermissions_basic(t *testing.T) {
 	})
 }
 
-func testAccUserPermissionsConfig(permission string) string {
+func testUserPermissionsConfig(permission string) string {
 	return fmt.Sprintf(`
 resource "statuspage_user" "perm_user" {
   organization_id = %[1]q

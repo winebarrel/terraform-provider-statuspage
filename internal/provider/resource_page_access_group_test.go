@@ -12,7 +12,7 @@ import (
 	"github.com/winebarrel/terraform-provider-statuspage/internal/apiclient"
 )
 
-func TestAccPageAccessGroup_basic(t *testing.T) {
+func TestPageAccessGroup_basic(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
@@ -50,11 +50,11 @@ func TestAccPageAccessGroup_basic(t *testing.T) {
 		})
 
 	resource.UnitTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read
 			{
-				Config: testAccPageAccessGroupConfig("tf-test-pag"),
+				Config: testPageAccessGroupConfig("tf-test-pag"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspage_page_access_group.test", "name", "tf-test-pag"),
 					resource.TestCheckResourceAttrSet("statuspage_page_access_group.test", "id"),
@@ -69,7 +69,7 @@ func TestAccPageAccessGroup_basic(t *testing.T) {
 			},
 			// Update
 			{
-				Config: testAccPageAccessGroupConfig("tf-test-pag-updated"),
+				Config: testPageAccessGroupConfig("tf-test-pag-updated"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspage_page_access_group.test", "name", "tf-test-pag-updated"),
 				),
@@ -78,7 +78,7 @@ func TestAccPageAccessGroup_basic(t *testing.T) {
 	})
 }
 
-func testAccPageAccessGroupConfig(name string) string {
+func testPageAccessGroupConfig(name string) string {
 	return fmt.Sprintf(`
 resource "statuspage_page_access_group" "test" {
   page_id = %q

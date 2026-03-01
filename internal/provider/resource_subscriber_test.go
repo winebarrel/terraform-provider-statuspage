@@ -12,7 +12,7 @@ import (
 	"github.com/winebarrel/terraform-provider-statuspage/internal/apiclient"
 )
 
-func TestAccSubscriber_basic(t *testing.T) {
+func TestSubscriber_basic(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
@@ -51,11 +51,11 @@ func TestAccSubscriber_basic(t *testing.T) {
 		})
 
 	resource.UnitTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read (email subscriber)
 			{
-				Config: testAccSubscriberConfig("tf-test-subscriber@example.com"),
+				Config: testSubscriberConfig("tf-test-subscriber@example.com"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspage_subscriber.test", "email", "tf-test-subscriber@example.com"),
 					resource.TestCheckResourceAttr("statuspage_subscriber.test", "mode", "email"),
@@ -73,7 +73,7 @@ func TestAccSubscriber_basic(t *testing.T) {
 			},
 			// Update email
 			{
-				Config: testAccSubscriberConfig("tf-test-subscriber-updated@example.com"),
+				Config: testSubscriberConfig("tf-test-subscriber-updated@example.com"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspage_subscriber.test", "email", "tf-test-subscriber-updated@example.com"),
 				),
@@ -82,7 +82,7 @@ func TestAccSubscriber_basic(t *testing.T) {
 	})
 }
 
-func testAccSubscriberConfig(email string) string {
+func testSubscriberConfig(email string) string {
 	return fmt.Sprintf(`
 resource "statuspage_subscriber" "test" {
   page_id                      = %q

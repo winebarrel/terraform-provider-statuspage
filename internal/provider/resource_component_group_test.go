@@ -13,7 +13,7 @@ import (
 	"github.com/winebarrel/terraform-provider-statuspage/internal/apiclient"
 )
 
-func TestAccComponentGroup_basic(t *testing.T) {
+func TestComponentGroup_basic(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
@@ -121,11 +121,11 @@ func TestAccComponentGroup_basic(t *testing.T) {
 		})
 
 	resource.UnitTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read
 			{
-				Config: testAccComponentGroupConfig("tf-test-group", "tf-test-group-comp1", "tf-test-group-comp2"),
+				Config: testComponentGroupConfig("tf-test-group", "tf-test-group-comp1", "tf-test-group-comp2"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspage_component_group.test", "name", "tf-test-group"),
 					resource.TestCheckResourceAttr("statuspage_component_group.test", "components.#", "2"),
@@ -141,7 +141,7 @@ func TestAccComponentGroup_basic(t *testing.T) {
 			},
 			// Update
 			{
-				Config: testAccComponentGroupConfig("tf-test-group-updated", "tf-test-group-comp1", "tf-test-group-comp2"),
+				Config: testComponentGroupConfig("tf-test-group-updated", "tf-test-group-comp1", "tf-test-group-comp2"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspage_component_group.test", "name", "tf-test-group-updated"),
 				),
@@ -150,7 +150,7 @@ func TestAccComponentGroup_basic(t *testing.T) {
 	})
 }
 
-func testAccComponentGroupConfig(groupName, comp1Name, comp2Name string) string {
+func testComponentGroupConfig(groupName, comp1Name, comp2Name string) string {
 	return fmt.Sprintf(`
 resource "statuspage_component" "group_comp1" {
   page_id = %[1]q

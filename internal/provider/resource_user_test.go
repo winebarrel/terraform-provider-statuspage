@@ -12,7 +12,7 @@ import (
 	"github.com/winebarrel/terraform-provider-statuspage/internal/apiclient"
 )
 
-func TestAccUser_basic(t *testing.T) {
+func TestUser_basic(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
@@ -43,11 +43,11 @@ func TestAccUser_basic(t *testing.T) {
 		})
 
 	resource.UnitTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read
 			{
-				Config: testAccUserConfig("tf-test-user@example.com", "TestFirst", "TestLast"),
+				Config: testUserConfig("tf-test-user@example.com", "TestFirst", "TestLast"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspage_user.test", "email", "tf-test-user@example.com"),
 					resource.TestCheckResourceAttr("statuspage_user.test", "first_name", "TestFirst"),
@@ -68,7 +68,7 @@ func TestAccUser_basic(t *testing.T) {
 	})
 }
 
-func testAccUserConfig(email, firstName, lastName string) string {
+func testUserConfig(email, firstName, lastName string) string {
 	return fmt.Sprintf(`
 resource "statuspage_user" "test" {
   organization_id = %q
