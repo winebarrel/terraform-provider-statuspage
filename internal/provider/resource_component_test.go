@@ -16,9 +16,8 @@ func TestAccComponent_basic(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	componentID := "component-id-1"
 	component := &apiclient.Component{
-		ID:              componentID,
+		ID:              "component-id-1",
 		PageID:          "test-page-id",
 		AutomationEmail: "component+test@notifications.statuspage.io",
 	}
@@ -32,12 +31,12 @@ func TestAccComponent_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(201, component)
 		})
 
-	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/test-page-id/components/"+componentID,
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/test-page-id/components/component-id-1",
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewJsonResponse(200, component)
 		})
 
-	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/test-page-id/components/"+componentID,
+	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/test-page-id/components/component-id-1",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.ComponentRequest
 			_ = json.NewDecoder(req.Body).Decode(&body)
@@ -50,7 +49,7 @@ func TestAccComponent_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(200, component)
 		})
 
-	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/test-page-id/components/"+componentID,
+	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/test-page-id/components/component-id-1",
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewStringResponse(204, ""), nil
 		})
