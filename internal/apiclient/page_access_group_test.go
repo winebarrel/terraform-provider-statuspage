@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"net/http"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetPageAccessGroup(t *testing.T) {
@@ -15,12 +18,8 @@ func TestGetPageAccessGroup(t *testing.T) {
 	})
 
 	group, err := c.GetPageAccessGroup(context.Background(), "p1", "ag1")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if group.Name != "VIP Group" {
-		t.Errorf("expected Name %q, got %q", "VIP Group", group.Name)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "VIP Group", group.Name)
 }
 
 func TestCreatePageAccessGroup(t *testing.T) {
@@ -33,12 +32,8 @@ func TestCreatePageAccessGroup(t *testing.T) {
 	})
 
 	group, err := c.CreatePageAccessGroup(context.Background(), "p1", PageAccessGroupBody{Name: "New Group"})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if group.Name != "New Group" {
-		t.Errorf("expected Name %q, got %q", "New Group", group.Name)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "New Group", group.Name)
 }
 
 func TestUpdatePageAccessGroup(t *testing.T) {
@@ -51,12 +46,8 @@ func TestUpdatePageAccessGroup(t *testing.T) {
 	})
 
 	group, err := c.UpdatePageAccessGroup(context.Background(), "p1", "ag1", PageAccessGroupBody{Name: "Updated Group"})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if group.Name != "Updated Group" {
-		t.Errorf("expected Name %q, got %q", "Updated Group", group.Name)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "Updated Group", group.Name)
 }
 
 func TestDeletePageAccessGroup(t *testing.T) {
@@ -67,7 +58,5 @@ func TestDeletePageAccessGroup(t *testing.T) {
 	})
 
 	err := c.DeletePageAccessGroup(context.Background(), "p1", "ag1")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
+	require.NoError(t, err)
 }

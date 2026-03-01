@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"net/http"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetPostmortem(t *testing.T) {
@@ -15,12 +18,8 @@ func TestGetPostmortem(t *testing.T) {
 	})
 
 	pm, err := c.GetPostmortem(context.Background(), "p1", "i1")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if pm.Body != "Root cause analysis" {
-		t.Errorf("expected Body %q, got %q", "Root cause analysis", pm.Body)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "Root cause analysis", pm.Body)
 }
 
 func TestCreateOrUpdatePostmortem(t *testing.T) {
@@ -33,12 +32,8 @@ func TestCreateOrUpdatePostmortem(t *testing.T) {
 	})
 
 	pm, err := c.CreateOrUpdatePostmortem(context.Background(), "p1", "i1", PostmortemBody{Body: "Updated analysis"})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if pm.Body != "Updated analysis" {
-		t.Errorf("expected Body %q, got %q", "Updated analysis", pm.Body)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "Updated analysis", pm.Body)
 }
 
 func TestDeletePostmortem(t *testing.T) {
@@ -49,7 +44,5 @@ func TestDeletePostmortem(t *testing.T) {
 	})
 
 	err := c.DeletePostmortem(context.Background(), "p1", "i1")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
+	require.NoError(t, err)
 }

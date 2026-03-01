@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"net/http"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetComponentGroup(t *testing.T) {
@@ -15,15 +18,9 @@ func TestGetComponentGroup(t *testing.T) {
 	})
 
 	group, err := c.GetComponentGroup(context.Background(), "p1", "g1")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if group.ID != "g1" {
-		t.Errorf("expected ID %q, got %q", "g1", group.ID)
-	}
-	if group.Name != "Infrastructure" {
-		t.Errorf("expected Name %q, got %q", "Infrastructure", group.Name)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "g1", group.ID)
+	assert.Equal(t, "Infrastructure", group.Name)
 }
 
 func TestCreateComponentGroup(t *testing.T) {
@@ -36,15 +33,9 @@ func TestCreateComponentGroup(t *testing.T) {
 	})
 
 	group, err := c.CreateComponentGroup(context.Background(), "p1", ComponentGroupBody{Name: "Backend", Components: []string{"c1", "c2"}})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if group.Name != "Backend" {
-		t.Errorf("expected Name %q, got %q", "Backend", group.Name)
-	}
-	if len(group.Components) != 2 {
-		t.Errorf("expected 2 components, got %d", len(group.Components))
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "Backend", group.Name)
+	assert.Len(t, group.Components, 2)
 }
 
 func TestUpdateComponentGroup(t *testing.T) {
@@ -57,12 +48,8 @@ func TestUpdateComponentGroup(t *testing.T) {
 	})
 
 	group, err := c.UpdateComponentGroup(context.Background(), "p1", "g1", ComponentGroupBody{Name: "Updated Group"})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if group.Name != "Updated Group" {
-		t.Errorf("expected Name %q, got %q", "Updated Group", group.Name)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "Updated Group", group.Name)
 }
 
 func TestDeleteComponentGroup(t *testing.T) {
@@ -73,7 +60,5 @@ func TestDeleteComponentGroup(t *testing.T) {
 	})
 
 	err := c.DeleteComponentGroup(context.Background(), "p1", "g1")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
+	require.NoError(t, err)
 }

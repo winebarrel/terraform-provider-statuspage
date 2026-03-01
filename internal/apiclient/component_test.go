@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"net/http"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetComponent(t *testing.T) {
@@ -15,15 +18,9 @@ func TestGetComponent(t *testing.T) {
 	})
 
 	comp, err := c.GetComponent(context.Background(), "p1", "c1")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if comp.ID != "c1" {
-		t.Errorf("expected ID %q, got %q", "c1", comp.ID)
-	}
-	if comp.Name != "API" {
-		t.Errorf("expected Name %q, got %q", "API", comp.Name)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "c1", comp.ID)
+	assert.Equal(t, "API", comp.Name)
 }
 
 func TestCreateComponent(t *testing.T) {
@@ -36,15 +33,9 @@ func TestCreateComponent(t *testing.T) {
 	})
 
 	comp, err := c.CreateComponent(context.Background(), "p1", ComponentBody{Name: "Web", Status: "operational"})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if comp.ID != "c-new" {
-		t.Errorf("expected ID %q, got %q", "c-new", comp.ID)
-	}
-	if comp.Name != "Web" {
-		t.Errorf("expected Name %q, got %q", "Web", comp.Name)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "c-new", comp.ID)
+	assert.Equal(t, "Web", comp.Name)
 }
 
 func TestUpdateComponent(t *testing.T) {
@@ -57,12 +48,8 @@ func TestUpdateComponent(t *testing.T) {
 	})
 
 	comp, err := c.UpdateComponent(context.Background(), "p1", "c1", ComponentBody{Name: "API Updated"})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if comp.Name != "API Updated" {
-		t.Errorf("expected Name %q, got %q", "API Updated", comp.Name)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "API Updated", comp.Name)
 }
 
 func TestDeleteComponent(t *testing.T) {
@@ -73,9 +60,7 @@ func TestDeleteComponent(t *testing.T) {
 	})
 
 	err := c.DeleteComponent(context.Background(), "p1", "c1")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
+	require.NoError(t, err)
 }
 
 func TestGetComponent_Error(t *testing.T) {
@@ -86,14 +71,8 @@ func TestGetComponent_Error(t *testing.T) {
 	})
 
 	_, err := c.GetComponent(context.Background(), "p1", "bad")
-	if err == nil {
-		t.Fatal("expected error, got nil")
-	}
+	require.Error(t, err)
 	apiErr, ok := err.(*APIError)
-	if !ok {
-		t.Fatalf("expected *APIError, got %T", err)
-	}
-	if apiErr.StatusCode != 404 {
-		t.Errorf("expected status 404, got %d", apiErr.StatusCode)
-	}
+	require.True(t, ok, "expected *APIError, got %T", err)
+	assert.Equal(t, 404, apiErr.StatusCode)
 }

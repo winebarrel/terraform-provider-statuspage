@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"net/http"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetPageAccessUser(t *testing.T) {
@@ -15,12 +18,8 @@ func TestGetPageAccessUser(t *testing.T) {
 	})
 
 	user, err := c.GetPageAccessUser(context.Background(), "p1", "au1")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if user.ExternalEmail != "user@example.com" {
-		t.Errorf("expected ExternalEmail %q, got %q", "user@example.com", user.ExternalEmail)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "user@example.com", user.ExternalEmail)
 }
 
 func TestCreatePageAccessUser(t *testing.T) {
@@ -33,12 +32,8 @@ func TestCreatePageAccessUser(t *testing.T) {
 	})
 
 	user, err := c.CreatePageAccessUser(context.Background(), "p1", PageAccessUserBody{ExternalEmail: "new@example.com"})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if user.ExternalEmail != "new@example.com" {
-		t.Errorf("expected ExternalEmail %q, got %q", "new@example.com", user.ExternalEmail)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "new@example.com", user.ExternalEmail)
 }
 
 func TestUpdatePageAccessUser(t *testing.T) {
@@ -51,12 +46,8 @@ func TestUpdatePageAccessUser(t *testing.T) {
 	})
 
 	user, err := c.UpdatePageAccessUser(context.Background(), "p1", "au1", PageAccessUserBody{ExternalEmail: "updated@example.com"})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if user.ExternalEmail != "updated@example.com" {
-		t.Errorf("expected ExternalEmail %q, got %q", "updated@example.com", user.ExternalEmail)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "updated@example.com", user.ExternalEmail)
 }
 
 func TestDeletePageAccessUser(t *testing.T) {
@@ -67,7 +58,5 @@ func TestDeletePageAccessUser(t *testing.T) {
 	})
 
 	err := c.DeletePageAccessUser(context.Background(), "p1", "au1")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
+	require.NoError(t, err)
 }

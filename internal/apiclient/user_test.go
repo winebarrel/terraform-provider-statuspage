@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"net/http"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetUser(t *testing.T) {
@@ -18,15 +21,9 @@ func TestGetUser(t *testing.T) {
 	})
 
 	user, err := c.GetUser(context.Background(), "org1", "u2")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if user.ID != "u2" {
-		t.Errorf("expected ID %q, got %q", "u2", user.ID)
-	}
-	if user.FirstName != "Bob" {
-		t.Errorf("expected FirstName %q, got %q", "Bob", user.FirstName)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "u2", user.ID)
+	assert.Equal(t, "Bob", user.FirstName)
 }
 
 func TestGetUser_NotFound(t *testing.T) {
@@ -39,16 +36,10 @@ func TestGetUser_NotFound(t *testing.T) {
 	})
 
 	_, err := c.GetUser(context.Background(), "org1", "nonexistent")
-	if err == nil {
-		t.Fatal("expected error, got nil")
-	}
+	require.Error(t, err)
 	apiErr, ok := err.(*APIError)
-	if !ok {
-		t.Fatalf("expected *APIError, got %T", err)
-	}
-	if apiErr.StatusCode != 404 {
-		t.Errorf("expected status 404, got %d", apiErr.StatusCode)
-	}
+	require.True(t, ok, "expected *APIError, got %T", err)
+	assert.Equal(t, 404, apiErr.StatusCode)
 }
 
 func TestCreateUser(t *testing.T) {
@@ -61,12 +52,8 @@ func TestCreateUser(t *testing.T) {
 	})
 
 	user, err := c.CreateUser(context.Background(), "org1", UserBody{Email: "new@example.com", FirstName: "New"})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if user.Email != "new@example.com" {
-		t.Errorf("expected Email %q, got %q", "new@example.com", user.Email)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "new@example.com", user.Email)
 }
 
 func TestDeleteUser(t *testing.T) {
@@ -77,7 +64,5 @@ func TestDeleteUser(t *testing.T) {
 	})
 
 	err := c.DeleteUser(context.Background(), "org1", "u1")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
+	require.NoError(t, err)
 }

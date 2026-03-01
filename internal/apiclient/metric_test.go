@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"net/http"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetMetric(t *testing.T) {
@@ -15,15 +18,9 @@ func TestGetMetric(t *testing.T) {
 	})
 
 	metric, err := c.GetMetric(context.Background(), "p1", "m1")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if metric.ID != "m1" {
-		t.Errorf("expected ID %q, got %q", "m1", metric.ID)
-	}
-	if metric.Name != "Latency" {
-		t.Errorf("expected Name %q, got %q", "Latency", metric.Name)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "m1", metric.ID)
+	assert.Equal(t, "Latency", metric.Name)
 }
 
 func TestCreateMetric(t *testing.T) {
@@ -36,12 +33,8 @@ func TestCreateMetric(t *testing.T) {
 	})
 
 	metric, err := c.CreateMetric(context.Background(), "p1", "mp1", MetricBody{Name: "CPU Usage"})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if metric.Name != "CPU Usage" {
-		t.Errorf("expected Name %q, got %q", "CPU Usage", metric.Name)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "CPU Usage", metric.Name)
 }
 
 func TestUpdateMetric(t *testing.T) {
@@ -54,12 +47,8 @@ func TestUpdateMetric(t *testing.T) {
 	})
 
 	metric, err := c.UpdateMetric(context.Background(), "p1", "m1", MetricBody{Name: "Updated Metric"})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if metric.Name != "Updated Metric" {
-		t.Errorf("expected Name %q, got %q", "Updated Metric", metric.Name)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "Updated Metric", metric.Name)
 }
 
 func TestDeleteMetric(t *testing.T) {
@@ -70,7 +59,5 @@ func TestDeleteMetric(t *testing.T) {
 	})
 
 	err := c.DeleteMetric(context.Background(), "p1", "m1")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
+	require.NoError(t, err)
 }

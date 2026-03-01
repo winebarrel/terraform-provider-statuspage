@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"net/http"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetStatusEmbedConfig(t *testing.T) {
@@ -15,12 +18,8 @@ func TestGetStatusEmbedConfig(t *testing.T) {
 	})
 
 	config, err := c.GetStatusEmbedConfig(context.Background(), "p1")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if config.Position != "bottom_left" {
-		t.Errorf("expected Position %q, got %q", "bottom_left", config.Position)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "bottom_left", config.Position)
 }
 
 func TestUpdateStatusEmbedConfig(t *testing.T) {
@@ -33,10 +32,6 @@ func TestUpdateStatusEmbedConfig(t *testing.T) {
 	})
 
 	config, err := c.UpdateStatusEmbedConfig(context.Background(), "p1", StatusEmbedConfigBody{Position: "top_right"})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if config.Position != "top_right" {
-		t.Errorf("expected Position %q, got %q", "top_right", config.Position)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "top_right", config.Position)
 }
