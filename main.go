@@ -8,6 +8,9 @@ import (
 	"github.com/winebarrel/terraform-provider-statuspage/internal/provider"
 )
 
+// Provider documentation generation.
+//go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs generate --provider-name statuspage
+
 var version string = "dev"
 
 func main() {

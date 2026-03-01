@@ -1,4 +1,4 @@
-.PHONY: build vet test lint clean
+.PHONY: build vet test lint clean docs
 
 build: vet
 	go build
@@ -14,3 +14,6 @@ lint:
 
 clean:
 	rm -f terraform-provider-statuspage
+
+docs:
+	go generate ./...
