@@ -15,7 +15,13 @@ const (
 	DefaultBaseURL = "https://api.statuspage.io/v1"
 )
 
-var RateLimitInterval = time.Second
+type ClientOption func(*Client)
+
+func WithRateLimitInterval(d time.Duration) ClientOption {
+	return func(c *Client) {
+		c.rateLimitInterval = d
+	}
+}
 
 type APIError struct {
 	StatusCode int
@@ -27,30 +33,36 @@ func (e *APIError) Error() string {
 }
 
 type Client struct {
-	baseURL    string
-	apiKey     string
-	httpClient *http.Client
-	mu         sync.Mutex
-	lastReq    time.Time
+	baseURL           string
+	apiKey            string
+	httpClient        *http.Client
+	mu                sync.Mutex
+	lastReq           time.Time
+	rateLimitInterval time.Duration
 }
 
-func NewClient(apiKey string) *Client {
-	return &Client{
-		baseURL:    DefaultBaseURL,
-		apiKey:     apiKey,
-		httpClient: &http.Client{Timeout: 30 * time.Second},
+func NewClient(apiKey string, opts ...ClientOption) *Client {
+	c := &Client{
+		baseURL:           DefaultBaseURL,
+		apiKey:            apiKey,
+		httpClient:        &http.Client{Timeout: 30 * time.Second},
+		rateLimitInterval: time.Second,
 	}
+	for _, opt := range opts {
+		opt(c)
+	}
+	return c
 }
 
 func (c *Client) rateLimit() {
-	if RateLimitInterval <= 0 {
+	if c.rateLimitInterval <= 0 {
 		return
 	}
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	elapsed := time.Since(c.lastReq)
-	if elapsed < RateLimitInterval {
-		time.Sleep(RateLimitInterval - elapsed)
+	if elapsed < c.rateLimitInterval {
+		time.Sleep(c.rateLimitInterval - elapsed)
 	}
 	c.lastReq = time.Now()
 }
