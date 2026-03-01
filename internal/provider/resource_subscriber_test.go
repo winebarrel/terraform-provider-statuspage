@@ -16,9 +16,8 @@ func TestAccSubscriber_basic(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	subscriberID := "subscriber-id-1"
 	subscriber := &apiclient.Subscriber{
-		ID:     subscriberID,
+		ID:     "subscriber-id-1",
 		PageID: "test-page-id",
 		Mode:   "email",
 	}
@@ -31,12 +30,12 @@ func TestAccSubscriber_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(201, subscriber)
 		})
 
-	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/test-page-id/subscribers/"+subscriberID,
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/test-page-id/subscribers/subscriber-id-1",
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewJsonResponse(200, subscriber)
 		})
 
-	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/test-page-id/subscribers/"+subscriberID,
+	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/test-page-id/subscribers/subscriber-id-1",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.SubscriberRequest
 			_ = json.NewDecoder(req.Body).Decode(&body)
@@ -46,7 +45,7 @@ func TestAccSubscriber_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(200, subscriber)
 		})
 
-	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/test-page-id/subscribers/"+subscriberID,
+	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/test-page-id/subscribers/subscriber-id-1",
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewStringResponse(204, ""), nil
 		})
