@@ -9,10 +9,9 @@ import (
 )
 
 var testProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
-	"statuspage": providerserver.NewProtocol6WithError(New("test")()),
+	"statuspage": providerserver.NewProtocol6WithError(New("test", apiclient.WithRateLimitInterval(0))()),
 }
 
 func init() {
 	_ = os.Setenv("STATUSPAGE_API_KEY", "test-api-key")
-	apiclient.RateLimitInterval = 0
 }
