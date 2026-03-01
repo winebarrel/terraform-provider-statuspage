@@ -9,6 +9,9 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func newTestClient(t *testing.T, handler http.Handler) *Client {
@@ -22,33 +25,20 @@ func newTestClient(t *testing.T, handler http.Handler) *Client {
 
 func TestNewClient(t *testing.T) {
 	c := NewClient("my-key")
-	if c.apiKey != "my-key" {
-		t.Errorf("expected apiKey %q, got %q", "my-key", c.apiKey)
-	}
-	if c.baseURL != DefaultBaseURL {
-		t.Errorf("expected baseURL %q, got %q", DefaultBaseURL, c.baseURL)
-	}
-	if c.rateLimitInterval != time.Second {
-		t.Errorf("expected rateLimitInterval %v, got %v", time.Second, c.rateLimitInterval)
-	}
-	if c.httpClient == nil {
-		t.Error("expected httpClient to be non-nil")
-	}
+	assert.Equal(t, "my-key", c.apiKey)
+	assert.Equal(t, DefaultBaseURL, c.baseURL)
+	assert.Equal(t, time.Second, c.rateLimitInterval)
+	assert.NotNil(t, c.httpClient)
 }
 
 func TestNewClient_WithRateLimitInterval(t *testing.T) {
 	c := NewClient("my-key", WithRateLimitInterval(500*time.Millisecond))
-	if c.rateLimitInterval != 500*time.Millisecond {
-		t.Errorf("expected rateLimitInterval %v, got %v", 500*time.Millisecond, c.rateLimitInterval)
-	}
+	assert.Equal(t, 500*time.Millisecond, c.rateLimitInterval)
 }
 
 func TestAPIError_Error(t *testing.T) {
 	err := &APIError{StatusCode: 404, Message: "not found"}
-	expected := "statuspage API error (HTTP 404): not found"
-	if err.Error() != expected {
-		t.Errorf("expected %q, got %q", expected, err.Error())
-	}
+	assert.Equal(t, "statuspage API error (HTTP 404): not found", err.Error())
 }
 
 func TestClient_AuthorizationHeader(t *testing.T) {
@@ -62,9 +52,7 @@ func TestClient_AuthorizationHeader(t *testing.T) {
 	var result map[string]string
 	_ = c.Get(context.Background(), "/test", &result)
 
-	if gotAuth != "OAuth test-api-key" {
-		t.Errorf("expected Authorization %q, got %q", "OAuth test-api-key", gotAuth)
-	}
+	assert.Equal(t, "OAuth test-api-key", gotAuth)
 }
 
 func TestClient_ContentTypeHeader(t *testing.T) {
@@ -79,9 +67,7 @@ func TestClient_ContentTypeHeader(t *testing.T) {
 	var result map[string]string
 	_ = c.Post(context.Background(), "/test", body, &result)
 
-	if gotContentType != "application/json" {
-		t.Errorf("expected Content-Type %q, got %q", "application/json", gotContentType)
-	}
+	assert.Equal(t, "application/json", gotContentType)
 }
 
 func TestClient_NoContentTypeOnGetRequest(t *testing.T) {
@@ -95,42 +81,28 @@ func TestClient_NoContentTypeOnGetRequest(t *testing.T) {
 	var result map[string]string
 	_ = c.Get(context.Background(), "/test", &result)
 
-	if gotContentType != "" {
-		t.Errorf("expected empty Content-Type for GET, got %q", gotContentType)
-	}
+	assert.Empty(t, gotContentType)
 }
 
 func TestClient_Get(t *testing.T) {
 	c := newTestClient(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			t.Errorf("expected method GET, got %s", r.Method)
-		}
-		if r.URL.Path != "/pages/p1" {
-			t.Errorf("expected path /pages/p1, got %s", r.URL.Path)
-		}
+		assert.Equal(t, http.MethodGet, r.Method)
+		assert.Equal(t, "/pages/p1", r.URL.Path)
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(map[string]string{"id": "p1", "name": "My Page"}) //nolint:errcheck
 	}))
 
 	var result map[string]string
 	err := c.Get(context.Background(), "/pages/p1", &result)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if result["id"] != "p1" {
-		t.Errorf("expected id %q, got %q", "p1", result["id"])
-	}
-	if result["name"] != "My Page" {
-		t.Errorf("expected name %q, got %q", "My Page", result["name"])
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "p1", result["id"])
+	assert.Equal(t, "My Page", result["name"])
 }
 
 func TestClient_Post(t *testing.T) {
 	var gotBody map[string]string
 	c := newTestClient(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			t.Errorf("expected method POST, got %s", r.Method)
-		}
+		assert.Equal(t, http.MethodPost, r.Method)
 		json.NewDecoder(r.Body).Decode(&gotBody) //nolint:errcheck
 		w.WriteHeader(http.StatusCreated)
 		json.NewEncoder(w).Encode(map[string]string{"id": "new-1", "name": gotBody["name"]}) //nolint:errcheck
@@ -139,12 +111,8 @@ func TestClient_Post(t *testing.T) {
 	body := map[string]string{"name": "new-component"}
 	var result map[string]string
 	err := c.Post(context.Background(), "/components", body, &result)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if result["id"] != "new-1" {
-		t.Errorf("expected id %q, got %q", "new-1", result["id"])
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "new-1", result["id"])
 }
 
 func TestClient_Post_NilResult(t *testing.T) {
@@ -154,16 +122,12 @@ func TestClient_Post_NilResult(t *testing.T) {
 
 	body := map[string]string{"name": "test"}
 	err := c.Post(context.Background(), "/test", body, nil)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
+	require.NoError(t, err)
 }
 
 func TestClient_Patch(t *testing.T) {
 	c := newTestClient(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPatch {
-			t.Errorf("expected method PATCH, got %s", r.Method)
-		}
+		assert.Equal(t, http.MethodPatch, r.Method)
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(map[string]string{"id": "1", "name": "updated"}) //nolint:errcheck
 	}))
@@ -171,19 +135,13 @@ func TestClient_Patch(t *testing.T) {
 	body := map[string]string{"name": "updated"}
 	var result map[string]string
 	err := c.Patch(context.Background(), "/test/1", body, &result)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if result["name"] != "updated" {
-		t.Errorf("expected name %q, got %q", "updated", result["name"])
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "updated", result["name"])
 }
 
 func TestClient_Put(t *testing.T) {
 	c := newTestClient(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPut {
-			t.Errorf("expected method PUT, got %s", r.Method)
-		}
+		assert.Equal(t, http.MethodPut, r.Method)
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(map[string]string{"id": "1"}) //nolint:errcheck
 	}))
@@ -191,26 +149,18 @@ func TestClient_Put(t *testing.T) {
 	body := map[string]string{"name": "test"}
 	var result map[string]string
 	err := c.Put(context.Background(), "/test/1", body, &result)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if result["id"] != "1" {
-		t.Errorf("expected id %q, got %q", "1", result["id"])
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "1", result["id"])
 }
 
 func TestClient_Delete(t *testing.T) {
 	c := newTestClient(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodDelete {
-			t.Errorf("expected method DELETE, got %s", r.Method)
-		}
+		assert.Equal(t, http.MethodDelete, r.Method)
 		w.WriteHeader(http.StatusNoContent)
 	}))
 
 	err := c.Delete(context.Background(), "/test/1")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
+	require.NoError(t, err)
 }
 
 func TestClient_ErrorResponse_WithErrorField(t *testing.T) {
@@ -221,19 +171,11 @@ func TestClient_ErrorResponse_WithErrorField(t *testing.T) {
 
 	var result map[string]string
 	err := c.Get(context.Background(), "/test", &result)
-	if err == nil {
-		t.Fatal("expected error, got nil")
-	}
+	require.Error(t, err)
 	apiErr, ok := err.(*APIError)
-	if !ok {
-		t.Fatalf("expected *APIError, got %T", err)
-	}
-	if apiErr.StatusCode != 422 {
-		t.Errorf("expected status 422, got %d", apiErr.StatusCode)
-	}
-	if apiErr.Message != "validation failed" {
-		t.Errorf("expected message %q, got %q", "validation failed", apiErr.Message)
-	}
+	require.True(t, ok, "expected *APIError, got %T", err)
+	assert.Equal(t, 422, apiErr.StatusCode)
+	assert.Equal(t, "validation failed", apiErr.Message)
 }
 
 func TestClient_ErrorResponse_WithMessageField(t *testing.T) {
@@ -244,13 +186,9 @@ func TestClient_ErrorResponse_WithMessageField(t *testing.T) {
 
 	var result map[string]string
 	err := c.Get(context.Background(), "/test", &result)
-	if err == nil {
-		t.Fatal("expected error, got nil")
-	}
+	require.Error(t, err)
 	apiErr := err.(*APIError)
-	if apiErr.Message != "forbidden" {
-		t.Errorf("expected message %q, got %q", "forbidden", apiErr.Message)
-	}
+	assert.Equal(t, "forbidden", apiErr.Message)
 }
 
 func TestClient_ErrorResponse_RawBody(t *testing.T) {
@@ -261,16 +199,10 @@ func TestClient_ErrorResponse_RawBody(t *testing.T) {
 
 	var result map[string]string
 	err := c.Get(context.Background(), "/test", &result)
-	if err == nil {
-		t.Fatal("expected error, got nil")
-	}
+	require.Error(t, err)
 	apiErr := err.(*APIError)
-	if apiErr.StatusCode != 500 {
-		t.Errorf("expected status 500, got %d", apiErr.StatusCode)
-	}
-	if apiErr.Message != "internal error" {
-		t.Errorf("expected message %q, got %q", "internal error", apiErr.Message)
-	}
+	assert.Equal(t, 500, apiErr.StatusCode)
+	assert.Equal(t, "internal error", apiErr.Message)
 }
 
 func TestClient_RateLimitRetry_429(t *testing.T) {
@@ -287,12 +219,8 @@ func TestClient_RateLimitRetry_429(t *testing.T) {
 
 	var result map[string]string
 	err := c.Get(context.Background(), "/test", &result)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if atomic.LoadInt32(&callCount) != 2 {
-		t.Errorf("expected 2 requests (1 retry), got %d", callCount)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, int32(2), atomic.LoadInt32(&callCount))
 }
 
 func TestClient_RateLimitRetry_420(t *testing.T) {
@@ -309,12 +237,8 @@ func TestClient_RateLimitRetry_420(t *testing.T) {
 
 	var result map[string]string
 	err := c.Get(context.Background(), "/test", &result)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if atomic.LoadInt32(&callCount) != 2 {
-		t.Errorf("expected 2 requests (1 retry), got %d", callCount)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, int32(2), atomic.LoadInt32(&callCount))
 }
 
 func TestClient_RateLimit(t *testing.T) {
@@ -330,9 +254,7 @@ func TestClient_RateLimit(t *testing.T) {
 	_ = c.Get(context.Background(), "/test", &result)
 	elapsed := time.Since(start)
 
-	if elapsed < 50*time.Millisecond {
-		t.Errorf("expected at least 50ms for rate limiting, got %v", elapsed)
-	}
+	assert.GreaterOrEqual(t, elapsed, 50*time.Millisecond)
 }
 
 func TestClient_RequestBodySerialization(t *testing.T) {
@@ -353,13 +275,7 @@ func TestClient_RequestBodySerialization(t *testing.T) {
 	_ = c.Post(context.Background(), "/test", body, &result)
 
 	var parsed ComponentRequest
-	if err := json.Unmarshal(gotBody, &parsed); err != nil {
-		t.Fatalf("failed to parse request body: %v", err)
-	}
-	if parsed.Component.Name != "web" {
-		t.Errorf("expected component name %q, got %q", "web", parsed.Component.Name)
-	}
-	if parsed.Component.Status != "operational" {
-		t.Errorf("expected component status %q, got %q", "operational", parsed.Component.Status)
-	}
+	require.NoError(t, json.Unmarshal(gotBody, &parsed))
+	assert.Equal(t, "web", parsed.Component.Name)
+	assert.Equal(t, "operational", parsed.Component.Status)
 }

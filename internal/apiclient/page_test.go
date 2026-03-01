@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"net/http"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetPage(t *testing.T) {
@@ -15,15 +18,9 @@ func TestGetPage(t *testing.T) {
 	})
 
 	page, err := c.GetPage(context.Background(), "page1")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if page.ID != "page1" {
-		t.Errorf("expected ID %q, got %q", "page1", page.ID)
-	}
-	if page.Name != "My Page" {
-		t.Errorf("expected Name %q, got %q", "My Page", page.Name)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "page1", page.ID)
+	assert.Equal(t, "My Page", page.Name)
 }
 
 func TestUpdatePage(t *testing.T) {
@@ -36,10 +33,6 @@ func TestUpdatePage(t *testing.T) {
 	})
 
 	page, err := c.UpdatePage(context.Background(), "page1", PageBody{Name: "Updated Page"})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if page.Name != "Updated Page" {
-		t.Errorf("expected Name %q, got %q", "Updated Page", page.Name)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "Updated Page", page.Name)
 }

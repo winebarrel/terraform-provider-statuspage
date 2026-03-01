@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"net/http"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetIncident(t *testing.T) {
@@ -15,15 +18,9 @@ func TestGetIncident(t *testing.T) {
 	})
 
 	incident, err := c.GetIncident(context.Background(), "p1", "i1")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if incident.Name != "Major Outage" {
-		t.Errorf("expected Name %q, got %q", "Major Outage", incident.Name)
-	}
-	if incident.Status != "investigating" {
-		t.Errorf("expected Status %q, got %q", "investigating", incident.Status)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "Major Outage", incident.Name)
+	assert.Equal(t, "investigating", incident.Status)
 }
 
 func TestCreateIncident(t *testing.T) {
@@ -36,12 +33,8 @@ func TestCreateIncident(t *testing.T) {
 	})
 
 	incident, err := c.CreateIncident(context.Background(), "p1", IncidentBody{Name: "API Down", Status: "investigating"})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if incident.ID != "i-new" {
-		t.Errorf("expected ID %q, got %q", "i-new", incident.ID)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "i-new", incident.ID)
 }
 
 func TestUpdateIncident(t *testing.T) {
@@ -54,12 +47,8 @@ func TestUpdateIncident(t *testing.T) {
 	})
 
 	incident, err := c.UpdateIncident(context.Background(), "p1", "i1", IncidentBody{Status: "resolved"})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if incident.Status != "resolved" {
-		t.Errorf("expected Status %q, got %q", "resolved", incident.Status)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "resolved", incident.Status)
 }
 
 func TestDeleteIncident(t *testing.T) {
@@ -70,7 +59,5 @@ func TestDeleteIncident(t *testing.T) {
 	})
 
 	err := c.DeleteIncident(context.Background(), "p1", "i1")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
+	require.NoError(t, err)
 }

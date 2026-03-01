@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"net/http"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetMetricsProvider(t *testing.T) {
@@ -15,15 +18,9 @@ func TestGetMetricsProvider(t *testing.T) {
 	})
 
 	provider, err := c.GetMetricsProvider(context.Background(), "p1", "mp1")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if provider.ID != "mp1" {
-		t.Errorf("expected ID %q, got %q", "mp1", provider.ID)
-	}
-	if provider.Type != "Datadog" {
-		t.Errorf("expected Type %q, got %q", "Datadog", provider.Type)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "mp1", provider.ID)
+	assert.Equal(t, "Datadog", provider.Type)
 }
 
 func TestCreateMetricsProvider(t *testing.T) {
@@ -36,12 +33,8 @@ func TestCreateMetricsProvider(t *testing.T) {
 	})
 
 	provider, err := c.CreateMetricsProvider(context.Background(), "p1", MetricsProviderBody{Type: "Datadog", Email: "test@example.com"})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if provider.Type != "Datadog" {
-		t.Errorf("expected Type %q, got %q", "Datadog", provider.Type)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "Datadog", provider.Type)
 }
 
 func TestUpdateMetricsProvider(t *testing.T) {
@@ -54,12 +47,8 @@ func TestUpdateMetricsProvider(t *testing.T) {
 	})
 
 	provider, err := c.UpdateMetricsProvider(context.Background(), "p1", "mp1", MetricsProviderBody{Type: "NewRelic"})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if provider.Type != "NewRelic" {
-		t.Errorf("expected Type %q, got %q", "NewRelic", provider.Type)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "NewRelic", provider.Type)
 }
 
 func TestDeleteMetricsProvider(t *testing.T) {
@@ -70,7 +59,5 @@ func TestDeleteMetricsProvider(t *testing.T) {
 	})
 
 	err := c.DeleteMetricsProvider(context.Background(), "p1", "mp1")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
+	require.NoError(t, err)
 }

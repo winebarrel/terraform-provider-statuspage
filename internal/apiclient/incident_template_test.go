@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"net/http"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetIncidentTemplate(t *testing.T) {
@@ -18,15 +21,9 @@ func TestGetIncidentTemplate(t *testing.T) {
 	})
 
 	tmpl, err := c.GetIncidentTemplate(context.Background(), "p1", "t2")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if tmpl.ID != "t2" {
-		t.Errorf("expected ID %q, got %q", "t2", tmpl.ID)
-	}
-	if tmpl.Name != "Template B" {
-		t.Errorf("expected Name %q, got %q", "Template B", tmpl.Name)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "t2", tmpl.ID)
+	assert.Equal(t, "Template B", tmpl.Name)
 }
 
 func TestGetIncidentTemplate_NotFound(t *testing.T) {
@@ -39,16 +36,10 @@ func TestGetIncidentTemplate_NotFound(t *testing.T) {
 	})
 
 	_, err := c.GetIncidentTemplate(context.Background(), "p1", "nonexistent")
-	if err == nil {
-		t.Fatal("expected error, got nil")
-	}
+	require.Error(t, err)
 	apiErr, ok := err.(*APIError)
-	if !ok {
-		t.Fatalf("expected *APIError, got %T", err)
-	}
-	if apiErr.StatusCode != 404 {
-		t.Errorf("expected status 404, got %d", apiErr.StatusCode)
-	}
+	require.True(t, ok, "expected *APIError, got %T", err)
+	assert.Equal(t, 404, apiErr.StatusCode)
 }
 
 func TestCreateIncidentTemplate(t *testing.T) {
@@ -61,15 +52,9 @@ func TestCreateIncidentTemplate(t *testing.T) {
 	})
 
 	tmpl, err := c.CreateIncidentTemplate(context.Background(), "p1", IncidentTemplateBody{Name: "Outage Template", Title: "Service Outage"})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if tmpl.ID != "t-new" {
-		t.Errorf("expected ID %q, got %q", "t-new", tmpl.ID)
-	}
-	if tmpl.Name != "Outage Template" {
-		t.Errorf("expected Name %q, got %q", "Outage Template", tmpl.Name)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "t-new", tmpl.ID)
+	assert.Equal(t, "Outage Template", tmpl.Name)
 }
 
 func TestUpdateIncidentTemplate(t *testing.T) {
@@ -82,12 +67,8 @@ func TestUpdateIncidentTemplate(t *testing.T) {
 	})
 
 	tmpl, err := c.UpdateIncidentTemplate(context.Background(), "p1", "t1", IncidentTemplateBody{Name: "Updated Template"})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if tmpl.Name != "Updated Template" {
-		t.Errorf("expected Name %q, got %q", "Updated Template", tmpl.Name)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "Updated Template", tmpl.Name)
 }
 
 func TestDeleteIncidentTemplate(t *testing.T) {
@@ -98,7 +79,5 @@ func TestDeleteIncidentTemplate(t *testing.T) {
 	})
 
 	err := c.DeleteIncidentTemplate(context.Background(), "p1", "t1")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
+	require.NoError(t, err)
 }

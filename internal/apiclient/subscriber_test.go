@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"net/http"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetSubscriber(t *testing.T) {
@@ -15,12 +18,8 @@ func TestGetSubscriber(t *testing.T) {
 	})
 
 	sub, err := c.GetSubscriber(context.Background(), "p1", "s1")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if sub.Email != "user@example.com" {
-		t.Errorf("expected Email %q, got %q", "user@example.com", sub.Email)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "user@example.com", sub.Email)
 }
 
 func TestCreateSubscriber(t *testing.T) {
@@ -33,12 +32,8 @@ func TestCreateSubscriber(t *testing.T) {
 	})
 
 	sub, err := c.CreateSubscriber(context.Background(), "p1", SubscriberBody{Email: "new@example.com"})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if sub.Email != "new@example.com" {
-		t.Errorf("expected Email %q, got %q", "new@example.com", sub.Email)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "new@example.com", sub.Email)
 }
 
 func TestUpdateSubscriber(t *testing.T) {
@@ -51,12 +46,8 @@ func TestUpdateSubscriber(t *testing.T) {
 	})
 
 	sub, err := c.UpdateSubscriber(context.Background(), "p1", "s1", SubscriberBody{Email: "updated@example.com"})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if sub.Email != "updated@example.com" {
-		t.Errorf("expected Email %q, got %q", "updated@example.com", sub.Email)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "updated@example.com", sub.Email)
 }
 
 func TestDeleteSubscriber(t *testing.T) {
@@ -67,7 +58,5 @@ func TestDeleteSubscriber(t *testing.T) {
 	})
 
 	err := c.DeleteSubscriber(context.Background(), "p1", "s1")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
+	require.NoError(t, err)
 }

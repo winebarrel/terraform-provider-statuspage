@@ -4,6 +4,9 @@ import (
 	"context"
 	"net/http"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetPermissions(t *testing.T) {
@@ -14,15 +17,9 @@ func TestGetPermissions(t *testing.T) {
 	})
 
 	perms, err := c.GetPermissions(context.Background(), "org1", "u1")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if perms.UserID != "u1" {
-		t.Errorf("expected UserID %q, got %q", "u1", perms.UserID)
-	}
-	if perms.Pages["p1"] != "admin" {
-		t.Errorf("expected page p1 role %q, got %q", "admin", perms.Pages["p1"])
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "u1", perms.UserID)
+	assert.Equal(t, "admin", perms.Pages["p1"])
 }
 
 func TestUpdatePermissions(t *testing.T) {
@@ -35,10 +32,6 @@ func TestUpdatePermissions(t *testing.T) {
 	perms, err := c.UpdatePermissions(context.Background(), "org1", "u1", PermissionsRequest{
 		Pages: map[string][]string{"p1": {"manager"}},
 	})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if perms.Pages["p1"] != "manager" {
-		t.Errorf("expected page p1 role %q, got %q", "manager", perms.Pages["p1"])
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "manager", perms.Pages["p1"])
 }
