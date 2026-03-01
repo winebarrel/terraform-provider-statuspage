@@ -26,7 +26,7 @@ func TestAccComponent_basic(t *testing.T) {
 	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/test-page-id/components",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.ComponentRequest
-			json.NewDecoder(req.Body).Decode(&body)
+			_ = json.NewDecoder(req.Body).Decode(&body)
 			component.Name = body.Component.Name
 			component.Status = body.Component.Status
 			return httpmock.NewJsonResponse(201, component)
@@ -40,7 +40,7 @@ func TestAccComponent_basic(t *testing.T) {
 	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/test-page-id/components/"+componentID,
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.ComponentRequest
-			json.NewDecoder(req.Body).Decode(&body)
+			_ = json.NewDecoder(req.Body).Decode(&body)
 			if body.Component.Name != "" {
 				component.Name = body.Component.Name
 			}

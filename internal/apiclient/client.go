@@ -83,7 +83,7 @@ func (c *Client) doRequest(ctx context.Context, method, path string, body interf
 	}
 
 	if resp.StatusCode == 420 || resp.StatusCode == 429 {
-		resp.Body.Close()
+		_ = resp.Body.Close()
 		time.Sleep(2 * time.Second)
 		return c.doRequest(ctx, method, path, body)
 	}
@@ -95,7 +95,7 @@ func (c *Client) checkResponse(resp *http.Response) error {
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
 		return nil
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 	body, _ := io.ReadAll(resp.Body)
 	var errResp struct {
 		Error   string `json:"error"`
@@ -117,7 +117,7 @@ func (c *Client) Get(ctx context.Context, path string, result interface{}) error
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 
 	if err := c.checkResponse(resp); err != nil {
 		return err
@@ -131,7 +131,7 @@ func (c *Client) Post(ctx context.Context, path string, body, result interface{}
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 
 	if err := c.checkResponse(resp); err != nil {
 		return err
@@ -148,7 +148,7 @@ func (c *Client) Patch(ctx context.Context, path string, body, result interface{
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 
 	if err := c.checkResponse(resp); err != nil {
 		return err
@@ -165,7 +165,7 @@ func (c *Client) Put(ctx context.Context, path string, body, result interface{})
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 
 	if err := c.checkResponse(resp); err != nil {
 		return err
@@ -182,7 +182,7 @@ func (c *Client) Delete(ctx context.Context, path string) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 
 	return c.checkResponse(resp)
 }

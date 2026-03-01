@@ -27,7 +27,7 @@ func TestAccIncident_basic(t *testing.T) {
 	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/test-page-id/incidents",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.IncidentRequest
-			json.NewDecoder(req.Body).Decode(&body)
+			_ = json.NewDecoder(req.Body).Decode(&body)
 			incident.Name = body.Incident.Name
 			incident.Status = body.Incident.Status
 			incident.Body = body.Incident.Body
@@ -42,7 +42,7 @@ func TestAccIncident_basic(t *testing.T) {
 	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/test-page-id/incidents/"+incidentID,
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.IncidentRequest
-			json.NewDecoder(req.Body).Decode(&body)
+			_ = json.NewDecoder(req.Body).Decode(&body)
 			if body.Incident.Name != "" {
 				incident.Name = body.Incident.Name
 			}

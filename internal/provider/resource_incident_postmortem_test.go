@@ -32,7 +32,7 @@ func TestAccIncidentPostmortem_basic(t *testing.T) {
 	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/test-page-id/incidents",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.IncidentRequest
-			json.NewDecoder(req.Body).Decode(&body)
+			_ = json.NewDecoder(req.Body).Decode(&body)
 			incident.Name = body.Incident.Name
 			incident.Status = body.Incident.Status
 			incident.Body = body.Incident.Body
@@ -53,7 +53,7 @@ func TestAccIncidentPostmortem_basic(t *testing.T) {
 	httpmock.RegisterResponder("PUT", "https://api.statuspage.io/v1/pages/test-page-id/incidents/"+incidentID+"/postmortem",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.PostmortemRequest
-			json.NewDecoder(req.Body).Decode(&body)
+			_ = json.NewDecoder(req.Body).Decode(&body)
 			if body.Postmortem.Body != "" {
 				postmortem.Body = body.Postmortem.Body
 			}

@@ -29,7 +29,7 @@ func TestAccPage_basic(t *testing.T) {
 	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/test-page-id",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.PageRequest
-			json.NewDecoder(req.Body).Decode(&body)
+			_ = json.NewDecoder(req.Body).Decode(&body)
 			if body.Page.Name != "" {
 				page.Name = body.Page.Name
 			}

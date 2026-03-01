@@ -34,7 +34,7 @@ func TestAccComponentGroup_basic(t *testing.T) {
 			mu.Lock()
 			defer mu.Unlock()
 			var body apiclient.ComponentRequest
-			json.NewDecoder(req.Body).Decode(&body)
+			_ = json.NewDecoder(req.Body).Decode(&body)
 			id := compIDs[compIdx]
 			compIdx++
 			comp := &apiclient.Component{
@@ -64,7 +64,7 @@ func TestAccComponentGroup_basic(t *testing.T) {
 				mu.Lock()
 				defer mu.Unlock()
 				var body apiclient.ComponentRequest
-				json.NewDecoder(req.Body).Decode(&body)
+				_ = json.NewDecoder(req.Body).Decode(&body)
 				if comp, ok := components[id]; ok {
 					if body.Component.Name != "" {
 						comp.Name = body.Component.Name
@@ -89,7 +89,7 @@ func TestAccComponentGroup_basic(t *testing.T) {
 	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/test-page-id/component-groups",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.ComponentGroupRequest
-			json.NewDecoder(req.Body).Decode(&body)
+			_ = json.NewDecoder(req.Body).Decode(&body)
 			group.Name = body.ComponentGroup.Name
 			group.Components = body.ComponentGroup.Components
 			return httpmock.NewJsonResponse(201, group)
@@ -105,7 +105,7 @@ func TestAccComponentGroup_basic(t *testing.T) {
 	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/test-page-id/component-groups/"+groupID,
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.ComponentGroupRequest
-			json.NewDecoder(req.Body).Decode(&body)
+			_ = json.NewDecoder(req.Body).Decode(&body)
 			if body.ComponentGroup.Name != "" {
 				group.Name = body.ComponentGroup.Name
 			}

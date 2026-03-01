@@ -25,7 +25,7 @@ func TestAccMetricsProvider_basic(t *testing.T) {
 	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/test-page-id/metrics_providers",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.MetricsProviderRequest
-			json.NewDecoder(req.Body).Decode(&body)
+			_ = json.NewDecoder(req.Body).Decode(&body)
 			metricsProvider.Type = body.MetricsProvider.Type
 			metricsProvider.Email = body.MetricsProvider.Email
 			return httpmock.NewJsonResponse(201, metricsProvider)
@@ -39,7 +39,7 @@ func TestAccMetricsProvider_basic(t *testing.T) {
 	httpmock.RegisterResponder("PATCH", "https://api.statuspage.io/v1/pages/test-page-id/metrics_providers/"+providerID,
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.MetricsProviderRequest
-			json.NewDecoder(req.Body).Decode(&body)
+			_ = json.NewDecoder(req.Body).Decode(&body)
 			if body.MetricsProvider.Type != "" {
 				metricsProvider.Type = body.MetricsProvider.Type
 			}
