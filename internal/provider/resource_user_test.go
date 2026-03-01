@@ -16,9 +16,8 @@ func TestAccUser_basic(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	userID := "user-id-1"
 	user := &apiclient.User{
-		ID:             userID,
+		ID:             "user-id-1",
 		OrganizationID: "test-org-id",
 	}
 
@@ -38,7 +37,7 @@ func TestAccUser_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(200, []apiclient.User{*user})
 		})
 
-	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/organizations/test-org-id/users/"+userID,
+	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/organizations/test-org-id/users/user-id-1",
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewStringResponse(204, ""), nil
 		})

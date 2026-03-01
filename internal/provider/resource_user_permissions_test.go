@@ -16,14 +16,13 @@ func TestAccUserPermissions_basic(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	userID := "user-perm-id-1"
 	user := &apiclient.User{
-		ID:             userID,
+		ID:             "user-perm-id-1",
 		OrganizationID: "test-org-id",
 	}
 
 	permissions := &apiclient.Permissions{
-		UserID: userID,
+		UserID: "user-perm-id-1",
 		Pages:  map[string]string{},
 	}
 
@@ -44,13 +43,13 @@ func TestAccUserPermissions_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(200, []apiclient.User{*user})
 		})
 
-	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/organizations/test-org-id/users/"+userID,
+	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/organizations/test-org-id/users/user-perm-id-1",
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewStringResponse(204, ""), nil
 		})
 
 	// Permissions responders
-	httpmock.RegisterResponder("PUT", "https://api.statuspage.io/v1/organizations/test-org-id/permissions/"+userID,
+	httpmock.RegisterResponder("PUT", "https://api.statuspage.io/v1/organizations/test-org-id/permissions/user-perm-id-1",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.PermissionsRequest
 			_ = json.NewDecoder(req.Body).Decode(&body)
@@ -64,7 +63,7 @@ func TestAccUserPermissions_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(200, permissions)
 		})
 
-	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/organizations/test-org-id/permissions/"+userID,
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/organizations/test-org-id/permissions/user-perm-id-1",
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewJsonResponse(200, permissions)
 		})
