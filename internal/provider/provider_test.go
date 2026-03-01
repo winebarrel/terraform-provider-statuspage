@@ -12,8 +12,6 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 	"statuspage": providerserver.NewProtocol6WithError(New("test")()),
 }
 
-var testAccOrganizationID = "test-org-id"
-
 func init() {
 	_ = os.Setenv("STATUSPAGE_API_KEY", "test-api-key")
 	apiclient.RateLimitInterval = 0

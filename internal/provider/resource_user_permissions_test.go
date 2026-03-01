@@ -19,7 +19,7 @@ func TestAccUserPermissions_basic(t *testing.T) {
 	userID := "user-perm-id-1"
 	user := &apiclient.User{
 		ID:             userID,
-		OrganizationID: testAccOrganizationID,
+		OrganizationID: "test-org-id",
 	}
 
 	permissions := &apiclient.Permissions{
@@ -28,7 +28,7 @@ func TestAccUserPermissions_basic(t *testing.T) {
 	}
 
 	// User responders
-	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/organizations/"+testAccOrganizationID+"/users",
+	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/organizations/test-org-id/users",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.UserRequest
 			_ = json.NewDecoder(req.Body).Decode(&body)
@@ -39,18 +39,18 @@ func TestAccUserPermissions_basic(t *testing.T) {
 		})
 
 	// GET users uses list endpoint
-	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/organizations/"+testAccOrganizationID+"/users",
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/organizations/test-org-id/users",
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewJsonResponse(200, []apiclient.User{*user})
 		})
 
-	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/organizations/"+testAccOrganizationID+"/users/"+userID,
+	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/organizations/test-org-id/users/"+userID,
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewStringResponse(204, ""), nil
 		})
 
 	// Permissions responders
-	httpmock.RegisterResponder("PUT", "https://api.statuspage.io/v1/organizations/"+testAccOrganizationID+"/permissions/"+userID,
+	httpmock.RegisterResponder("PUT", "https://api.statuspage.io/v1/organizations/test-org-id/permissions/"+userID,
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.PermissionsRequest
 			_ = json.NewDecoder(req.Body).Decode(&body)
@@ -64,7 +64,7 @@ func TestAccUserPermissions_basic(t *testing.T) {
 			return httpmock.NewJsonResponse(200, permissions)
 		})
 
-	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/organizations/"+testAccOrganizationID+"/permissions/"+userID,
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/organizations/test-org-id/permissions/"+userID,
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewJsonResponse(200, permissions)
 		})
@@ -116,7 +116,7 @@ resource "statuspage_user_permissions" "test" {
     %[2]q = %[3]q
   }
 }
-`, testAccOrganizationID, "test-page-id", permission)
+`, "test-org-id", "test-page-id", permission)
 }
 
 func importStateIDFuncUserPermissions(resourceName string) resource.ImportStateIdFunc {

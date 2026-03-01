@@ -19,10 +19,10 @@ func TestAccUser_basic(t *testing.T) {
 	userID := "user-id-1"
 	user := &apiclient.User{
 		ID:             userID,
-		OrganizationID: testAccOrganizationID,
+		OrganizationID: "test-org-id",
 	}
 
-	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/organizations/"+testAccOrganizationID+"/users",
+	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/organizations/test-org-id/users",
 		func(req *http.Request) (*http.Response, error) {
 			var body apiclient.UserRequest
 			_ = json.NewDecoder(req.Body).Decode(&body)
@@ -33,12 +33,12 @@ func TestAccUser_basic(t *testing.T) {
 		})
 
 	// GET uses list endpoint - returns array
-	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/organizations/"+testAccOrganizationID+"/users",
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/organizations/test-org-id/users",
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewJsonResponse(200, []apiclient.User{*user})
 		})
 
-	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/organizations/"+testAccOrganizationID+"/users/"+userID,
+	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/organizations/test-org-id/users/"+userID,
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewStringResponse(204, ""), nil
 		})
@@ -78,7 +78,7 @@ resource "statuspage_user" "test" {
   first_name      = %q
   last_name       = %q
 }
-`, testAccOrganizationID, email, firstName, lastName)
+`, "test-org-id", email, firstName, lastName)
 }
 
 func importStateIDFuncUser(resourceName string) resource.ImportStateIdFunc {
