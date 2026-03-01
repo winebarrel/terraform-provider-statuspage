@@ -1,11 +1,7 @@
 version: 2
-
 before:
   hooks:
     - go mod tidy
-    - go generate ./...
-    - go vet ./...
-
 builds:
   - env:
       - CGO_ENABLED=0
@@ -13,24 +9,27 @@ builds:
     flags:
       - -trimpath
     ldflags:
-      - "-s -w -X main.version={{ .Version }}"
+      - "-s -w -X main.version={{.Version}}"
     goos:
+      - freebsd
+      - windows
       - linux
       - darwin
-      - windows
     goarch:
       - amd64
+      - "386"
+      - arm
       - arm64
+    ignore:
+      - goos: darwin
+        goarch: "386"
     binary: "{{ .ProjectName }}_v{{ .Version }}"
-
 archives:
-  - format: zip
+  - formats: ["zip"]
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
-
 checksum:
   name_template: "{{ .ProjectName }}_{{ .Version }}_SHA256SUMS"
   algorithm: sha256
-
 signs:
   - artifacts: checksum
     args:
@@ -41,6 +40,5 @@ signs:
       - "${signature}"
       - "--detach-sign"
       - "${artifact}"
-
-release:
-  draft: true
+changelog:
+  disable: true
