@@ -5,6 +5,8 @@
 
 Terraform provider for [Statuspage.io](https://www.atlassian.com/software/statuspage).
 
+ref. https://developer.statuspage.io/
+
 ## Usage
 
 ```hcl
