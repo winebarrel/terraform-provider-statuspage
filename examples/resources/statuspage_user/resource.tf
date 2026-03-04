@@ -1,0 +1,7 @@
+resource "statuspage_user" "example" {
+  organization_id = "org123"
+  email           = "newuser@example.com"
+  password        = "securepassword123"
+  first_name      = "John"
+  last_name       = "Doe"
+}
