@@ -1,5 +1,8 @@
 # terraform-provider-statuspage
 
+> [!warning]
+> This provider is still under development.
+
 [![CI](https://github.com/winebarrel/terraform-provider-statuspage/actions/workflows/ci.yml/badge.svg)](https://github.com/winebarrel/terraform-provider-statuspage/actions/workflows/ci.yml)
 [![terraform registry](https://img.shields.io/badge/terraform-registry-blueviolet)](https://registry.terraform.io/providers/winebarrel/statuspage/latest)
 
