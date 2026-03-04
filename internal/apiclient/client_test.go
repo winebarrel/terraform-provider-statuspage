@@ -279,3 +279,29 @@ func TestClient_RequestBodySerialization(t *testing.T) {
 	assert.Equal(t, "web", parsed.Component.Name)
 	assert.Equal(t, "operational", parsed.Component.Status)
 }
+
+func TestMaskHeader(t *testing.T) {
+	input := "GET / HTTP/1.1\nHost: example.com\nAuthorization: OAuth mySecretToken\nContent-Type: application/json"
+	got := maskHeader("Authorization", input)
+	assert.Equal(t, "GET / HTTP/1.1\nHost: example.com\nAuthorization: ***** ********Token\nContent-Type: application/json", got)
+}
+
+func TestMaskHeader_NoMatch(t *testing.T) {
+	input := "GET / HTTP/1.1\nHost: example.com\nContent-Type: application/json"
+	got := maskHeader("Authorization", input)
+	assert.Equal(t, input, got)
+}
+
+func TestMaskHeader_ShortValue(t *testing.T) {
+	// Value is short enough that no masking occurs (len <= 5)
+	input := "Authorization: abcd"
+	got := maskHeader("Authorization", input)
+	assert.Equal(t, "Authorization: abcd", got)
+}
+
+func TestMaskHeader_LeadingSpacePreserved(t *testing.T) {
+	// Leading space after colon is preserved during masking; last 5 chars are visible
+	input := "Authorization: mysecretapikey"
+	got := maskHeader("Authorization", input)
+	assert.Equal(t, "Authorization: *********pikey", got)
+}
