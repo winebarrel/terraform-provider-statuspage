@@ -47,7 +47,6 @@ resource "statuspage_incident" "outage" {
 - `auto_tweet_one_hour_before` (Boolean)
 - `body` (String) The initial message, created as the first incident update.
 - `component_ids` (List of String)
-- `components` (Map of String) Map of component IDs to their status.
 - `deliver_notifications` (Boolean)
 - `impact_override` (String)
 - `scheduled_auto_completed` (Boolean)
@@ -59,5 +58,26 @@ resource "statuspage_incident" "outage" {
 
 ### Read-Only
 
+- `components` (Attributes List) List of components affected by this incident. (see [below for nested schema](#nestedatt--components))
 - `id` (String) The ID of this resource.
 - `shortlink` (String)
+
+<a id="nestedatt--components"></a>
+### Nested Schema for `components`
+
+Read-Only:
+
+- `automation_email` (String)
+- `created_at` (String)
+- `description` (String)
+- `group` (Boolean)
+- `group_id` (String)
+- `id` (String)
+- `name` (String)
+- `only_show_if_degraded` (Boolean)
+- `page_id` (String)
+- `position` (Number)
+- `showcase` (Boolean)
+- `start_date` (String)
+- `status` (String)
+- `updated_at` (String)
