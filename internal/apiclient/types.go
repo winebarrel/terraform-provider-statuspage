@@ -42,7 +42,7 @@ type Page struct {
 	CSSGraphColor            string `json:"css_graph_color,omitempty"`
 	CSSLinkColor             string `json:"css_link_color,omitempty"`
 	CSSNoData                string `json:"css_no_data,omitempty"`
-	// NOTE: The following values ​​may be returned in the object and should be ignored:
+	// NOTE: The following values ​​may be returned in the object and should be ignored
 	// FaviconLogo       string `json:"favicon_logo,omitempty"`
 	// TransactionalLogo string `json:"transactional_logo,omitempty"`
 	// HeroCover         string `json:"hero_cover,omitempty"`
