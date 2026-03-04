@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -14,8 +15,12 @@ import (
 var version string = "dev"
 
 func main() {
+	debug := flag.Bool("debug", false, "debug mode")
+	flag.Parse()
+
 	err := providerserver.Serve(context.Background(), provider.New(version), providerserver.ServeOpts{
 		Address: "registry.terraform.io/winebarrel/statuspage",
+		Debug:   *debug,
 	})
 	if err != nil {
 		log.Fatal(err)
