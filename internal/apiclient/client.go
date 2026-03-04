@@ -115,7 +115,7 @@ func (c *Client) doRequest(ctx context.Context, method, path string, body interf
 	if c.debug {
 		b, _ := httputil.DumpResponse(resp, true)
 		additionalField := map[string]any{
-			"req": fmt.Sprintf("---response begin---\n%s\n---response end---\n", b),
+			"resp": fmt.Sprintf("---response begin---\n%s\n---response end---\n", b),
 		}
 		tflog.Debug(ctx, "statuspage API response", additionalField)
 	}
