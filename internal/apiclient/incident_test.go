@@ -23,6 +23,36 @@ func TestGetIncident(t *testing.T) {
 	assert.Equal(t, "investigating", incident.Status)
 }
 
+func TestGetIncident_withComponents(t *testing.T) {
+	c := testServer(t, map[string]http.HandlerFunc{
+		"GET /pages/p1/incidents/i1": func(w http.ResponseWriter, r *http.Request) {
+			jsonResponse(w, 200, Incident{
+				ID:     "i1",
+				PageID: "p1",
+				Name:   "Major Outage",
+				Status: "investigating",
+				Components: []Component{
+					{ID: "c1", PageID: "p1", Name: "API", Status: "major_outage"},
+					{ID: "c2", PageID: "p1", Name: "Web App", Status: "degraded_performance"},
+				},
+				ComponentIDs: []string{"c1", "c2"},
+			})
+		},
+	})
+
+	incident, err := c.GetIncident(context.Background(), "p1", "i1")
+	require.NoError(t, err)
+	assert.Equal(t, "Major Outage", incident.Name)
+	require.Len(t, incident.Components, 2)
+	assert.Equal(t, "c1", incident.Components[0].ID)
+	assert.Equal(t, "API", incident.Components[0].Name)
+	assert.Equal(t, "major_outage", incident.Components[0].Status)
+	assert.Equal(t, "c2", incident.Components[1].ID)
+	assert.Equal(t, "Web App", incident.Components[1].Name)
+	assert.Equal(t, "degraded_performance", incident.Components[1].Status)
+	assert.Equal(t, []string{"c1", "c2"}, incident.ComponentIDs)
+}
+
 func TestCreateIncident(t *testing.T) {
 	c := testServer(t, map[string]http.HandlerFunc{
 		"POST /pages/p1/incidents": func(w http.ResponseWriter, r *http.Request) {

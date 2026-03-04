@@ -38,7 +38,7 @@ data "statuspage_incident" "example" {
 - `auto_tweet_one_hour_before` (Boolean)
 - `body` (String) The initial message, created as the first incident update.
 - `component_ids` (List of String)
-- `components` (Map of String) Map of component IDs to their status.
+- `components` (Attributes List) List of components affected by this incident. (see [below for nested schema](#nestedatt--components))
 - `deliver_notifications` (Boolean)
 - `id` (String) The ID of this resource.
 - `impact_override` (String)
@@ -50,3 +50,23 @@ data "statuspage_incident" "example" {
 - `scheduled_until` (String) The timestamp the maintenance is scheduled until (ISO 8601).
 - `shortlink` (String)
 - `status` (String)
+
+<a id="nestedatt--components"></a>
+### Nested Schema for `components`
+
+Read-Only:
+
+- `automation_email` (String)
+- `created_at` (String)
+- `description` (String)
+- `group` (Boolean)
+- `group_id` (String)
+- `id` (String)
+- `name` (String)
+- `only_show_if_degraded` (Boolean)
+- `page_id` (String)
+- `position` (Number)
+- `showcase` (Boolean)
+- `start_date` (String)
+- `status` (String)
+- `updated_at` (String)

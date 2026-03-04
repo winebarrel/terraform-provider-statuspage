@@ -155,7 +155,7 @@ type Incident struct {
 	AutoTweetOneHourBefore                    bool              `json:"auto_tweet_one_hour_before,omitempty"`
 	Metadata                                  interface{}       `json:"metadata,omitempty"`
 	DeliverNotifications                      bool              `json:"deliver_notifications,omitempty"`
-	Components                                map[string]string `json:"components,omitempty"`
+	Components                                []Component       `json:"components,omitempty"`
 	ComponentIDs                              []string          `json:"component_ids,omitempty"`
 	Body                                      string            `json:"body,omitempty"`
 	CreatedAt                                 string            `json:"created_at,omitempty"`
