@@ -235,12 +235,10 @@ func maskHeader(name string, s string) string {
 			nv := strings.SplitN(l, ":", 2)
 			if len(nv) == 2 {
 				v := []rune(nv[1])
-				for i := 0; i < len(v)-5; i++ {
-					mask := '*'
-					if i == 0 {
-						mask = ' '
+				for i := range v {
+					if v[i] != ' ' {
+						v[i] = '*'
 					}
-					v[i] = mask
 				}
 				l = nv[0] + ":" + string(v)
 			}
