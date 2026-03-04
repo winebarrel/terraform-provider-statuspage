@@ -99,5 +99,16 @@ func (p *statuspageProvider) Resources(_ context.Context) []func() resource.Reso
 }
 
 func (p *statuspageProvider) DataSources(_ context.Context) []func() datasource.DataSource {
-	return []func() datasource.DataSource{}
+	return []func() datasource.DataSource{
+		NewComponentDataSource,
+		NewComponentGroupDataSource,
+		NewIncidentDataSource,
+		NewIncidentTemplateDataSource,
+		NewMetricDataSource,
+		NewMetricsProviderDataSource,
+		NewPageDataSource,
+		NewPageAccessUserDataSource,
+		NewPageAccessGroupDataSource,
+		NewSubscriberDataSource,
+	}
 }
