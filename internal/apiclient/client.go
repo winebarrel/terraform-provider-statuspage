@@ -7,8 +7,12 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httputil"
+	"strings"
 	"sync"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 const (
@@ -20,6 +24,12 @@ type ClientOption func(*Client)
 func WithRateLimitInterval(d time.Duration) ClientOption {
 	return func(c *Client) {
 		c.rateLimitInterval = d
+	}
+}
+
+func WithDebug() ClientOption {
+	return func(c *Client) {
+		c.debug = true
 	}
 }
 
@@ -39,6 +49,7 @@ type Client struct {
 	mu                sync.Mutex
 	lastReq           time.Time
 	rateLimitInterval time.Duration
+	debug             bool
 }
 
 func NewClient(apiKey string, opts ...ClientOption) *Client {
@@ -89,9 +100,25 @@ func (c *Client) doRequest(ctx context.Context, method, path string, body interf
 		req.Header.Set("Content-Type", "application/json")
 	}
 
+	if c.debug {
+		b, _ := httputil.DumpRequest(req, true)
+		additionalField := map[string]any{
+			"req": maskHeader("Authorization", fmt.Sprintf("---request begin---\n%s\n---request end---\n", b)),
+		}
+		tflog.Debug(ctx, "statuspage API request", additionalField)
+	}
+
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, err
+	}
+
+	if c.debug {
+		b, _ := httputil.DumpResponse(resp, true)
+		additionalField := map[string]any{
+			"resp": fmt.Sprintf("---response begin---\n%s\n---response end---\n", b),
+		}
+		tflog.Debug(ctx, "statuspage API response", additionalField)
 	}
 
 	if resp.StatusCode == 420 || resp.StatusCode == 429 {
@@ -197,4 +224,28 @@ func (c *Client) Delete(ctx context.Context, path string) error {
 	defer resp.Body.Close() //nolint:errcheck
 
 	return c.checkResponse(resp)
+}
+
+func maskHeader(name string, s string) string {
+	lines := strings.Split(s, "\n")
+	newLines := []string{}
+
+	for _, l := range lines {
+		if strings.HasPrefix(l, name+":") {
+			nv := strings.SplitN(l, ":", 2)
+			if len(nv) == 2 {
+				v := []rune(nv[1])
+				for i := 0; i < len(v)-5; i++ {
+					if v[i] != ' ' {
+						v[i] = '*'
+					}
+				}
+				l = nv[0] + ":" + string(v)
+			}
+		}
+
+		newLines = append(newLines, l)
+	}
+
+	return strings.Join(newLines, "\n")
 }
