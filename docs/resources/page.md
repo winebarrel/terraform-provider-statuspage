@@ -13,6 +13,11 @@ Manages a Statuspage page. Pages cannot be created or deleted via the API; use t
 ## Example Usage
 
 ```terraform
+import {
+  to = statuspage_page.main
+  id = "abc123def456"
+}
+
 resource "statuspage_page" "main" {
   id                      = "abc123def456"
   name                    = "My Company Status"

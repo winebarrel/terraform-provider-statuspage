@@ -13,6 +13,11 @@ Manages a Statuspage incident postmortem.
 ## Example Usage
 
 ```terraform
+import {
+  to = statuspage_incident_postmortem.example
+  id = "abc123def456/incident-id-1"
+}
+
 resource "statuspage_incident_postmortem" "example" {
   page_id     = "abc123def456"
   incident_id = statuspage_incident.outage.id

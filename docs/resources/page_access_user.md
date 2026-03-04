@@ -13,6 +13,11 @@ Manages a Statuspage page access user.
 ## Example Usage
 
 ```terraform
+import {
+  to = statuspage_page_access_user.example
+  id = "abc123def456/page-access-user-id-1"
+}
+
 resource "statuspage_page_access_user" "example" {
   page_id        = "abc123def456"
   external_login = "user@example.com"
