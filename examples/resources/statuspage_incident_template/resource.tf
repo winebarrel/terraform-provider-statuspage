@@ -1,3 +1,8 @@
+import {
+  to = statuspage_incident_template.outage
+  id = "abc123def456/template-id-1"
+}
+
 resource "statuspage_incident_template" "outage" {
   page_id       = "abc123def456"
   name          = "Service Outage Template"

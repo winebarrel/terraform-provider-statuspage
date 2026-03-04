@@ -1,3 +1,8 @@
+import {
+  to = statuspage_status_embed_config.example
+  id = "abc123def456"
+}
+
 resource "statuspage_status_embed_config" "example" {
   page_id                      = "abc123def456"
   position                     = "bottom-right"

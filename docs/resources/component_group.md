@@ -23,6 +23,11 @@ resource "statuspage_component" "web" {
   name    = "Web App"
 }
 
+import {
+  to = statuspage_component_group.services
+  id = "abc123def456/component-group-id-1"
+}
+
 resource "statuspage_component_group" "services" {
   page_id     = "abc123def456"
   name        = "Core Services"

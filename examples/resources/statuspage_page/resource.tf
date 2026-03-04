@@ -1,3 +1,8 @@
+import {
+  to = statuspage_page.main
+  id = "abc123def456"
+}
+
 resource "statuspage_page" "main" {
   id                      = "abc123def456"
   name                    = "My Company Status"

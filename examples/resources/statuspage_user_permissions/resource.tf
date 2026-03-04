@@ -1,3 +1,8 @@
+import {
+  to = statuspage_user_permissions.example
+  id = "org123/user-id-1"
+}
+
 resource "statuspage_user_permissions" "example" {
   organization_id = "org123"
   user_id         = statuspage_user.example.id

@@ -1,3 +1,8 @@
+import {
+  to = statuspage_metric.response_time
+  id = "abc123def456/metric-id-1"
+}
+
 resource "statuspage_metric" "response_time" {
   page_id             = "abc123def456"
   metrics_provider_id = statuspage_metrics_provider.datadog.id
