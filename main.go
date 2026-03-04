@@ -4,8 +4,10 @@ import (
 	"context"
 	"flag"
 	"log"
+	"os"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
+	"github.com/winebarrel/terraform-provider-statuspage/internal/apiclient"
 	"github.com/winebarrel/terraform-provider-statuspage/internal/provider"
 )
 
@@ -18,7 +20,12 @@ func main() {
 	debug := flag.Bool("debug", false, "debug mode")
 	flag.Parse()
 
-	err := providerserver.Serve(context.Background(), provider.New(version), providerserver.ServeOpts{
+	apiclientOpts := []apiclient.ClientOption{}
+	if os.Getenv("TF_LOG") == "debug" {
+		apiclientOpts = append(apiclientOpts, apiclient.WithDebug())
+	}
+
+	err := providerserver.Serve(context.Background(), provider.New(version, apiclientOpts...), providerserver.ServeOpts{
 		Address: "registry.terraform.io/winebarrel/statuspage",
 		Debug:   *debug,
 	})

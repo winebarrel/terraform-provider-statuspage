@@ -8,9 +8,10 @@ import (
 	"io"
 	"net/http"
 	"net/http/httputil"
-	"os"
 	"sync"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 const (
@@ -100,7 +101,10 @@ func (c *Client) doRequest(ctx context.Context, method, path string, body interf
 
 	if c.debug {
 		b, _ := httputil.DumpRequest(req, true)
-		fmt.Fprintf(os.Stderr, "---request begin---\n%s\n---request end---\n", b)
+		additionalField := map[string]any{
+			"req": fmt.Sprintf("---request begin---\n%s\n---request end---\n", b),
+		}
+		tflog.Debug(ctx, "statuspage API request", additionalField)
 	}
 
 	resp, err := c.httpClient.Do(req)
@@ -110,7 +114,10 @@ func (c *Client) doRequest(ctx context.Context, method, path string, body interf
 
 	if c.debug {
 		b, _ := httputil.DumpResponse(resp, true)
-		fmt.Fprintf(os.Stderr, "---response begin---\n%s\n---response end---\n", b)
+		additionalField := map[string]any{
+			"req": fmt.Sprintf("---response begin---\n%s\n---response end---\n", b),
+		}
+		tflog.Debug(ctx, "statuspage API response", additionalField)
 	}
 
 	if resp.StatusCode == 420 || resp.StatusCode == 429 {
