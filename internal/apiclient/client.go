@@ -242,7 +242,7 @@ func maskHeader(name string, s string) string {
 					}
 					v[i] = mask
 				}
-				l = nv[0] + string(v)
+				l = nv[0] + ":" + string(v)
 			}
 		}
 
