@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httputil"
+	"os"
 	"sync"
 	"time"
 )
@@ -20,6 +22,12 @@ type ClientOption func(*Client)
 func WithRateLimitInterval(d time.Duration) ClientOption {
 	return func(c *Client) {
 		c.rateLimitInterval = d
+	}
+}
+
+func WithDebug() ClientOption {
+	return func(c *Client) {
+		c.debug = true
 	}
 }
 
@@ -39,6 +47,7 @@ type Client struct {
 	mu                sync.Mutex
 	lastReq           time.Time
 	rateLimitInterval time.Duration
+	debug             bool
 }
 
 func NewClient(apiKey string, opts ...ClientOption) *Client {
@@ -89,9 +98,19 @@ func (c *Client) doRequest(ctx context.Context, method, path string, body interf
 		req.Header.Set("Content-Type", "application/json")
 	}
 
+	if c.debug {
+		b, _ := httputil.DumpRequest(req, true)
+		fmt.Fprintf(os.Stderr, "---request begin---\n%s\n---request end---\n", b)
+	}
+
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, err
+	}
+
+	if c.debug {
+		b, _ := httputil.DumpResponse(resp, true)
+		fmt.Fprintf(os.Stderr, "---response begin---\n%s\n---response end---\n", b)
 	}
 
 	if resp.StatusCode == 420 || resp.StatusCode == 429 {
