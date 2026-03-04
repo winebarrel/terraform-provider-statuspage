@@ -93,6 +93,77 @@ func TestIncident_basic(t *testing.T) {
 	})
 }
 
+func TestIncident_withComponents(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	incident := &apiclient.Incident{
+		ID:                   "incident-id-1",
+		PageID:               "test-page-id",
+		Shortlink:            "https://stspg.io/test123",
+		DeliverNotifications: true,
+	}
+
+	httpmock.RegisterResponder("POST", "https://api.statuspage.io/v1/pages/test-page-id/incidents",
+		func(req *http.Request) (*http.Response, error) {
+			var body apiclient.IncidentRequest
+			json.NewDecoder(req.Body).Decode(&body)
+			incident.Name = body.Incident.Name
+			incident.Status = body.Incident.Status
+			incident.Body = body.Incident.Body
+			incident.ComponentIDs = body.Incident.ComponentIDs
+			incident.Components = []apiclient.Component{
+				{ID: "comp-1", PageID: "test-page-id", Name: "API", Status: "major_outage"},
+				{ID: "comp-2", PageID: "test-page-id", Name: "Web App", Status: "degraded_performance"},
+			}
+			return httpmock.NewJsonResponse(201, incident)
+		})
+
+	httpmock.RegisterResponder("GET", "https://api.statuspage.io/v1/pages/test-page-id/incidents/incident-id-1",
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewJsonResponse(200, incident)
+		})
+
+	httpmock.RegisterResponder("DELETE", "https://api.statuspage.io/v1/pages/test-page-id/incidents/incident-id-1",
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewStringResponse(204, ""), nil
+		})
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testIncidentConfigWithComponents("tf-test-incident", "investigating", "Initial investigation"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("statuspage_incident.test", "name", "tf-test-incident"),
+					resource.TestCheckResourceAttr("statuspage_incident.test", "components.#", "2"),
+					resource.TestCheckResourceAttr("statuspage_incident.test", "components.0.id", "comp-1"),
+					resource.TestCheckResourceAttr("statuspage_incident.test", "components.0.name", "API"),
+					resource.TestCheckResourceAttr("statuspage_incident.test", "components.0.status", "major_outage"),
+					resource.TestCheckResourceAttr("statuspage_incident.test", "components.1.id", "comp-2"),
+					resource.TestCheckResourceAttr("statuspage_incident.test", "components.1.name", "Web App"),
+					resource.TestCheckResourceAttr("statuspage_incident.test", "components.1.status", "degraded_performance"),
+					resource.TestCheckResourceAttr("statuspage_incident.test", "component_ids.#", "2"),
+					resource.TestCheckResourceAttr("statuspage_incident.test", "component_ids.0", "comp-1"),
+					resource.TestCheckResourceAttr("statuspage_incident.test", "component_ids.1", "comp-2"),
+				),
+			},
+		},
+	})
+}
+
+func testIncidentConfigWithComponents(name, status, body string) string {
+	return fmt.Sprintf(`
+resource "statuspage_incident" "test" {
+  page_id       = %q
+  name          = %q
+  status        = %q
+  body          = %q
+  component_ids = ["comp-1", "comp-2"]
+}
+`, "test-page-id", name, status, body)
+}
+
 func testIncidentConfig(name, status, body string) string {
 	return fmt.Sprintf(`
 resource "statuspage_incident" "test" {
