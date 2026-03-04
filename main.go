@@ -5,6 +5,7 @@ import (
 	"flag"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/winebarrel/terraform-provider-statuspage/internal/apiclient"
@@ -21,7 +22,7 @@ func main() {
 	flag.Parse()
 
 	apiclientOpts := []apiclient.ClientOption{}
-	if os.Getenv("TF_LOG") == "debug" {
+	if strings.EqualFold(os.Getenv("TF_LOG"), "debug") {
 		apiclientOpts = append(apiclientOpts, apiclient.WithDebug())
 	}
 
