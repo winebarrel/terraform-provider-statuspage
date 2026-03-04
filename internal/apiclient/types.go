@@ -42,11 +42,12 @@ type Page struct {
 	CSSGraphColor            string `json:"css_graph_color,omitempty"`
 	CSSLinkColor             string `json:"css_link_color,omitempty"`
 	CSSNoData                string `json:"css_no_data,omitempty"`
-	FaviconLogo              string `json:"favicon_logo,omitempty"`
-	TransactionalLogo        string `json:"transactional_logo,omitempty"`
-	HeroCover                string `json:"hero_cover,omitempty"`
-	EmailLogo                string `json:"email_logo,omitempty"`
-	TwitterLogo              string `json:"twitter_logo,omitempty"`
+	// NOTE: The following values ​​may be returned in the object and should be ignored
+	// FaviconLogo       string `json:"favicon_logo,omitempty"`
+	// TransactionalLogo string `json:"transactional_logo,omitempty"`
+	// HeroCover         string `json:"hero_cover,omitempty"`
+	// EmailLogo         string `json:"email_logo,omitempty"`
+	// TwitterLogo       string `json:"twitter_logo,omitempty"`
 }
 
 type PageRequest struct {
@@ -133,41 +134,41 @@ type ComponentGroupBody struct {
 
 // Incident represents a Statuspage incident.
 type Incident struct {
-	ID                                         string            `json:"id"`
-	PageID                                     string            `json:"page_id"`
-	Name                                       string            `json:"name"`
-	Status                                     string            `json:"status,omitempty"`
-	Impact                                     string            `json:"impact,omitempty"`
-	ImpactOverride                             string            `json:"impact_override,omitempty"`
-	ScheduledFor                               string            `json:"scheduled_for,omitempty"`
-	ScheduledUntil                             string            `json:"scheduled_until,omitempty"`
-	ScheduledRemindPrior                       bool              `json:"scheduled_remind_prior,omitempty"`
-	ScheduledAutoInProgress                    bool              `json:"scheduled_auto_in_progress,omitempty"`
-	ScheduledAutoCompleted                     bool              `json:"scheduled_auto_completed,omitempty"`
-	AutoTransitionToMaintenanceState           bool              `json:"auto_transition_to_maintenance_state,omitempty"`
-	AutoTransitionToOperationalState           bool              `json:"auto_transition_to_operational_state,omitempty"`
-	AutoTransitionDeliverNotificationsAtStart  bool              `json:"auto_transition_deliver_notifications_at_start,omitempty"`
-	AutoTransitionDeliverNotificationsAtEnd    bool              `json:"auto_transition_deliver_notifications_at_end,omitempty"`
-	AutoTweetAtBeginning                       bool              `json:"auto_tweet_at_beginning,omitempty"`
-	AutoTweetOnCreation                        bool              `json:"auto_tweet_on_creation,omitempty"`
-	AutoTweetOnCompletion                      bool              `json:"auto_tweet_on_completion,omitempty"`
-	AutoTweetOneHourBefore                     bool              `json:"auto_tweet_one_hour_before,omitempty"`
-	Metadata                                   interface{}       `json:"metadata,omitempty"`
-	DeliverNotifications                       bool              `json:"deliver_notifications,omitempty"`
-	Components                                 map[string]string `json:"components,omitempty"`
-	ComponentIDs                               []string          `json:"component_ids,omitempty"`
-	Body                                       string            `json:"body,omitempty"`
-	CreatedAt                                  string            `json:"created_at,omitempty"`
-	UpdatedAt                                  string            `json:"updated_at,omitempty"`
-	ResolvedAt                                 string            `json:"resolved_at,omitempty"`
-	Shortlink                                  string            `json:"shortlink,omitempty"`
-	MonitoringAt                               string            `json:"monitoring_at,omitempty"`
-	PostmortemBody                             string            `json:"postmortem_body,omitempty"`
-	PostmortemBodyLastUpdatedAt                string            `json:"postmortem_body_last_updated_at,omitempty"`
-	PostmortemIgnored                          bool              `json:"postmortem_ignored,omitempty"`
-	PostmortemPublishedAt                      string            `json:"postmortem_published_at,omitempty"`
-	PostmortemNotifiedSubscribers              bool              `json:"postmortem_notified_subscribers,omitempty"`
-	PostmortemNotifiedTwitter                  bool              `json:"postmortem_notified_twitter,omitempty"`
+	ID                                        string            `json:"id"`
+	PageID                                    string            `json:"page_id"`
+	Name                                      string            `json:"name"`
+	Status                                    string            `json:"status,omitempty"`
+	Impact                                    string            `json:"impact,omitempty"`
+	ImpactOverride                            string            `json:"impact_override,omitempty"`
+	ScheduledFor                              string            `json:"scheduled_for,omitempty"`
+	ScheduledUntil                            string            `json:"scheduled_until,omitempty"`
+	ScheduledRemindPrior                      bool              `json:"scheduled_remind_prior,omitempty"`
+	ScheduledAutoInProgress                   bool              `json:"scheduled_auto_in_progress,omitempty"`
+	ScheduledAutoCompleted                    bool              `json:"scheduled_auto_completed,omitempty"`
+	AutoTransitionToMaintenanceState          bool              `json:"auto_transition_to_maintenance_state,omitempty"`
+	AutoTransitionToOperationalState          bool              `json:"auto_transition_to_operational_state,omitempty"`
+	AutoTransitionDeliverNotificationsAtStart bool              `json:"auto_transition_deliver_notifications_at_start,omitempty"`
+	AutoTransitionDeliverNotificationsAtEnd   bool              `json:"auto_transition_deliver_notifications_at_end,omitempty"`
+	AutoTweetAtBeginning                      bool              `json:"auto_tweet_at_beginning,omitempty"`
+	AutoTweetOnCreation                       bool              `json:"auto_tweet_on_creation,omitempty"`
+	AutoTweetOnCompletion                     bool              `json:"auto_tweet_on_completion,omitempty"`
+	AutoTweetOneHourBefore                    bool              `json:"auto_tweet_one_hour_before,omitempty"`
+	Metadata                                  interface{}       `json:"metadata,omitempty"`
+	DeliverNotifications                      bool              `json:"deliver_notifications,omitempty"`
+	Components                                map[string]string `json:"components,omitempty"`
+	ComponentIDs                              []string          `json:"component_ids,omitempty"`
+	Body                                      string            `json:"body,omitempty"`
+	CreatedAt                                 string            `json:"created_at,omitempty"`
+	UpdatedAt                                 string            `json:"updated_at,omitempty"`
+	ResolvedAt                                string            `json:"resolved_at,omitempty"`
+	Shortlink                                 string            `json:"shortlink,omitempty"`
+	MonitoringAt                              string            `json:"monitoring_at,omitempty"`
+	PostmortemBody                            string            `json:"postmortem_body,omitempty"`
+	PostmortemBodyLastUpdatedAt               string            `json:"postmortem_body_last_updated_at,omitempty"`
+	PostmortemIgnored                         bool              `json:"postmortem_ignored,omitempty"`
+	PostmortemPublishedAt                     string            `json:"postmortem_published_at,omitempty"`
+	PostmortemNotifiedSubscribers             bool              `json:"postmortem_notified_subscribers,omitempty"`
+	PostmortemNotifiedTwitter                 bool              `json:"postmortem_notified_twitter,omitempty"`
 }
 
 type IncidentRequest struct {
@@ -175,41 +176,41 @@ type IncidentRequest struct {
 }
 
 type IncidentBody struct {
-	Name                                       string            `json:"name,omitempty"`
-	Status                                     string            `json:"status,omitempty"`
-	ImpactOverride                             string            `json:"impact_override,omitempty"`
-	ScheduledFor                               string            `json:"scheduled_for,omitempty"`
-	ScheduledUntil                             string            `json:"scheduled_until,omitempty"`
-	ScheduledRemindPrior                       *bool             `json:"scheduled_remind_prior,omitempty"`
-	ScheduledAutoInProgress                    *bool             `json:"scheduled_auto_in_progress,omitempty"`
-	ScheduledAutoCompleted                     *bool             `json:"scheduled_auto_completed,omitempty"`
-	AutoTransitionToMaintenanceState           *bool             `json:"auto_transition_to_maintenance_state,omitempty"`
-	AutoTransitionToOperationalState           *bool             `json:"auto_transition_to_operational_state,omitempty"`
-	AutoTransitionDeliverNotificationsAtStart  *bool             `json:"auto_transition_deliver_notifications_at_start,omitempty"`
-	AutoTransitionDeliverNotificationsAtEnd    *bool             `json:"auto_transition_deliver_notifications_at_end,omitempty"`
-	AutoTweetAtBeginning                       *bool             `json:"auto_tweet_at_beginning,omitempty"`
-	AutoTweetOnCreation                        *bool             `json:"auto_tweet_on_creation,omitempty"`
-	AutoTweetOnCompletion                      *bool             `json:"auto_tweet_on_completion,omitempty"`
-	AutoTweetOneHourBefore                     *bool             `json:"auto_tweet_one_hour_before,omitempty"`
-	DeliverNotifications                       *bool             `json:"deliver_notifications,omitempty"`
-	Body                                       string            `json:"body,omitempty"`
-	Components                                 map[string]string `json:"components,omitempty"`
-	ComponentIDs                               []string          `json:"component_ids,omitempty"`
-	Metadata                                   interface{}       `json:"metadata,omitempty"`
+	Name                                      string            `json:"name,omitempty"`
+	Status                                    string            `json:"status,omitempty"`
+	ImpactOverride                            string            `json:"impact_override,omitempty"`
+	ScheduledFor                              string            `json:"scheduled_for,omitempty"`
+	ScheduledUntil                            string            `json:"scheduled_until,omitempty"`
+	ScheduledRemindPrior                      *bool             `json:"scheduled_remind_prior,omitempty"`
+	ScheduledAutoInProgress                   *bool             `json:"scheduled_auto_in_progress,omitempty"`
+	ScheduledAutoCompleted                    *bool             `json:"scheduled_auto_completed,omitempty"`
+	AutoTransitionToMaintenanceState          *bool             `json:"auto_transition_to_maintenance_state,omitempty"`
+	AutoTransitionToOperationalState          *bool             `json:"auto_transition_to_operational_state,omitempty"`
+	AutoTransitionDeliverNotificationsAtStart *bool             `json:"auto_transition_deliver_notifications_at_start,omitempty"`
+	AutoTransitionDeliverNotificationsAtEnd   *bool             `json:"auto_transition_deliver_notifications_at_end,omitempty"`
+	AutoTweetAtBeginning                      *bool             `json:"auto_tweet_at_beginning,omitempty"`
+	AutoTweetOnCreation                       *bool             `json:"auto_tweet_on_creation,omitempty"`
+	AutoTweetOnCompletion                     *bool             `json:"auto_tweet_on_completion,omitempty"`
+	AutoTweetOneHourBefore                    *bool             `json:"auto_tweet_one_hour_before,omitempty"`
+	DeliverNotifications                      *bool             `json:"deliver_notifications,omitempty"`
+	Body                                      string            `json:"body,omitempty"`
+	Components                                map[string]string `json:"components,omitempty"`
+	ComponentIDs                              []string          `json:"component_ids,omitempty"`
+	Metadata                                  interface{}       `json:"metadata,omitempty"`
 }
 
 // IncidentTemplate represents an incident template.
 type IncidentTemplate struct {
-	ID                     string   `json:"id"`
-	PageID                 string   `json:"page_id,omitempty"`
-	Name                   string   `json:"name,omitempty"`
-	Title                  string   `json:"title,omitempty"`
-	Body                   string   `json:"body,omitempty"`
-	GroupID                string   `json:"group_id,omitempty"`
-	UpdateStatus           string   `json:"update_status,omitempty"`
-	ShouldTweet            bool     `json:"should_tweet,omitempty"`
-	ShouldSendNotifications bool    `json:"should_send_notifications,omitempty"`
-	ComponentIDs           []string `json:"component_ids,omitempty"`
+	ID                      string   `json:"id"`
+	PageID                  string   `json:"page_id,omitempty"`
+	Name                    string   `json:"name,omitempty"`
+	Title                   string   `json:"title,omitempty"`
+	Body                    string   `json:"body,omitempty"`
+	GroupID                 string   `json:"group_id,omitempty"`
+	UpdateStatus            string   `json:"update_status,omitempty"`
+	ShouldTweet             bool     `json:"should_tweet,omitempty"`
+	ShouldSendNotifications bool     `json:"should_send_notifications,omitempty"`
+	ComponentIDs            []string `json:"component_ids,omitempty"`
 }
 
 type IncidentTemplateRequest struct {
@@ -229,14 +230,14 @@ type IncidentTemplateBody struct {
 
 // Postmortem represents an incident postmortem.
 type Postmortem struct {
-	Body                 string `json:"body,omitempty"`
-	BodyDraft            string `json:"body_draft,omitempty"`
-	BodyUpdatedAt        string `json:"body_updated_at,omitempty"`
-	BodyDraftUpdatedAt   string `json:"body_draft_updated_at,omitempty"`
-	NotifySubscribers    bool   `json:"notify_subscribers,omitempty"`
-	NotifyTwitter        bool   `json:"notify_twitter,omitempty"`
-	CreatedAt            string `json:"created_at,omitempty"`
-	UpdatedAt            string `json:"updated_at,omitempty"`
+	Body               string `json:"body,omitempty"`
+	BodyDraft          string `json:"body_draft,omitempty"`
+	BodyUpdatedAt      string `json:"body_updated_at,omitempty"`
+	BodyDraftUpdatedAt string `json:"body_draft_updated_at,omitempty"`
+	NotifySubscribers  bool   `json:"notify_subscribers,omitempty"`
+	NotifyTwitter      bool   `json:"notify_twitter,omitempty"`
+	CreatedAt          string `json:"created_at,omitempty"`
+	UpdatedAt          string `json:"updated_at,omitempty"`
 }
 
 type PostmortemRequest struct {
@@ -252,25 +253,25 @@ type PostmortemBody struct {
 
 // Metric represents a Statuspage metric.
 type Metric struct {
-	ID                  string  `json:"id"`
-	PageID              string  `json:"page_id,omitempty"`
-	MetricsProviderID   string  `json:"metrics_provider_id,omitempty"`
-	MetricIdentifier    string  `json:"metric_identifier,omitempty"`
-	Name                string  `json:"name,omitempty"`
-	Display             bool    `json:"display,omitempty"`
-	TooltipDescription  string  `json:"tooltip_description,omitempty"`
-	Backfilled          bool    `json:"backfilled,omitempty"`
-	BackfillPercentage  float64 `json:"backfill_percentage,omitempty"`
-	YAxisMin            float64 `json:"y_axis_min"`
-	YAxisMax            float64 `json:"y_axis_max"`
-	YAxisHidden         bool    `json:"y_axis_hidden,omitempty"`
-	Suffix              string  `json:"suffix,omitempty"`
-	DecimalPlaces       int     `json:"decimal_places,omitempty"`
-	MostRecentDataAt    string  `json:"most_recent_data_at,omitempty"`
-	CreatedAt           string  `json:"created_at,omitempty"`
-	UpdatedAt           string  `json:"updated_at,omitempty"`
-	LastFetchedAt       string  `json:"last_fetched_at,omitempty"`
-	ReferenceName       string  `json:"reference_name,omitempty"`
+	ID                 string  `json:"id"`
+	PageID             string  `json:"page_id,omitempty"`
+	MetricsProviderID  string  `json:"metrics_provider_id,omitempty"`
+	MetricIdentifier   string  `json:"metric_identifier,omitempty"`
+	Name               string  `json:"name,omitempty"`
+	Display            bool    `json:"display,omitempty"`
+	TooltipDescription string  `json:"tooltip_description,omitempty"`
+	Backfilled         bool    `json:"backfilled,omitempty"`
+	BackfillPercentage float64 `json:"backfill_percentage,omitempty"`
+	YAxisMin           float64 `json:"y_axis_min"`
+	YAxisMax           float64 `json:"y_axis_max"`
+	YAxisHidden        bool    `json:"y_axis_hidden,omitempty"`
+	Suffix             string  `json:"suffix,omitempty"`
+	DecimalPlaces      int     `json:"decimal_places,omitempty"`
+	MostRecentDataAt   string  `json:"most_recent_data_at,omitempty"`
+	CreatedAt          string  `json:"created_at,omitempty"`
+	UpdatedAt          string  `json:"updated_at,omitempty"`
+	LastFetchedAt      string  `json:"last_fetched_at,omitempty"`
+	ReferenceName      string  `json:"reference_name,omitempty"`
 }
 
 type MetricRequest struct {
@@ -318,21 +319,21 @@ type MetricsProviderBody struct {
 
 // Subscriber represents a Statuspage subscriber.
 type Subscriber struct {
-	ID                     string `json:"id"`
-	PageID                 string `json:"page_id,omitempty"`
-	Email                  string `json:"email,omitempty"`
-	PhoneNumber            string `json:"phone_number,omitempty"`
-	PhoneCountry           string `json:"phone_country,omitempty"`
-	DisplayPhoneNumber     string `json:"display_phone_number,omitempty"`
-	Endpoint               string `json:"endpoint,omitempty"`
-	Mode                   string `json:"mode,omitempty"`
-	QuarantinedAt          string `json:"quarantined_at,omitempty"`
-	PurgeAt                string `json:"purge_at,omitempty"`
-	WorkspaceName          string `json:"workspace_name,omitempty"`
-	ObfuscatedChannelName  string `json:"obfuscated_channel_name,omitempty"`
-	ComponentIDs           []string `json:"component_ids,omitempty"`
-	CreatedAt              string `json:"created_at,omitempty"`
-	SkipConfirmationNotification bool `json:"skip_confirmation_notification,omitempty"`
+	ID                           string   `json:"id"`
+	PageID                       string   `json:"page_id,omitempty"`
+	Email                        string   `json:"email,omitempty"`
+	PhoneNumber                  string   `json:"phone_number,omitempty"`
+	PhoneCountry                 string   `json:"phone_country,omitempty"`
+	DisplayPhoneNumber           string   `json:"display_phone_number,omitempty"`
+	Endpoint                     string   `json:"endpoint,omitempty"`
+	Mode                         string   `json:"mode,omitempty"`
+	QuarantinedAt                string   `json:"quarantined_at,omitempty"`
+	PurgeAt                      string   `json:"purge_at,omitempty"`
+	WorkspaceName                string   `json:"workspace_name,omitempty"`
+	ObfuscatedChannelName        string   `json:"obfuscated_channel_name,omitempty"`
+	ComponentIDs                 []string `json:"component_ids,omitempty"`
+	CreatedAt                    string   `json:"created_at,omitempty"`
+	SkipConfirmationNotification bool     `json:"skip_confirmation_notification,omitempty"`
 }
 
 type SubscriberRequest struct {
@@ -350,15 +351,15 @@ type SubscriberBody struct {
 
 // PageAccessUser represents a page access user.
 type PageAccessUser struct {
-	ID                     string   `json:"id"`
-	PageID                 string   `json:"page_id,omitempty"`
-	ExternalLogin          string   `json:"external_login,omitempty"`
-	ExternalEmail          string   `json:"external_email,omitempty"`
-	PageAccessGroupIDs     []string `json:"page_access_group_ids,omitempty"`
-	ComponentIDs           []string `json:"component_ids,omitempty"`
-	MetricIDs              []string `json:"metric_ids,omitempty"`
-	CreatedAt              string   `json:"created_at,omitempty"`
-	UpdatedAt              string   `json:"updated_at,omitempty"`
+	ID                 string   `json:"id"`
+	PageID             string   `json:"page_id,omitempty"`
+	ExternalLogin      string   `json:"external_login,omitempty"`
+	ExternalEmail      string   `json:"external_email,omitempty"`
+	PageAccessGroupIDs []string `json:"page_access_group_ids,omitempty"`
+	ComponentIDs       []string `json:"component_ids,omitempty"`
+	MetricIDs          []string `json:"metric_ids,omitempty"`
+	CreatedAt          string   `json:"created_at,omitempty"`
+	UpdatedAt          string   `json:"updated_at,omitempty"`
 }
 
 type PageAccessUserRequest struct {
@@ -366,10 +367,10 @@ type PageAccessUserRequest struct {
 }
 
 type PageAccessUserBody struct {
-	ExternalLogin  string   `json:"external_login,omitempty"`
-	ExternalEmail  string   `json:"external_email,omitempty"`
-	ComponentIDs   []string `json:"component_ids,omitempty"`
-	MetricIDs      []string `json:"metric_ids,omitempty"`
+	ExternalLogin string   `json:"external_login,omitempty"`
+	ExternalEmail string   `json:"external_email,omitempty"`
+	ComponentIDs  []string `json:"component_ids,omitempty"`
+	MetricIDs     []string `json:"metric_ids,omitempty"`
 }
 
 // PageAccessGroup represents a page access group.
@@ -399,10 +400,10 @@ type PageAccessGroupBody struct {
 
 // StatusEmbedConfig represents a status embed configuration.
 type StatusEmbedConfig struct {
-	PageID    string `json:"page_id,omitempty"`
-	Position  string `json:"position,omitempty"`
-	IncidentBackgroundColor string `json:"incident_background_color,omitempty"`
-	IncidentTextColor       string `json:"incident_text_color,omitempty"`
+	PageID                     string `json:"page_id,omitempty"`
+	Position                   string `json:"position,omitempty"`
+	IncidentBackgroundColor    string `json:"incident_background_color,omitempty"`
+	IncidentTextColor          string `json:"incident_text_color,omitempty"`
 	MaintenanceBackgroundColor string `json:"maintenance_background_color,omitempty"`
 	MaintenanceTextColor       string `json:"maintenance_text_color,omitempty"`
 }
@@ -443,8 +444,8 @@ type UserBody struct {
 
 // Permissions represents user permissions.
 type Permissions struct {
-	UserID      string            `json:"user_id,omitempty"`
-	Pages       map[string]string `json:"pages,omitempty"`
+	UserID string            `json:"user_id,omitempty"`
+	Pages  map[string]string `json:"pages,omitempty"`
 }
 
 type PermissionsRequest struct {
