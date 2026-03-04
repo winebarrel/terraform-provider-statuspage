@@ -1,3 +1,8 @@
+import {
+  to = statuspage_page_access_group.engineering
+  id = "abc123def456/page-access-group-id-1"
+}
+
 resource "statuspage_page_access_group" "engineering" {
   page_id              = "abc123def456"
   name                 = "Engineering Team"

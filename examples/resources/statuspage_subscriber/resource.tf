@@ -1,3 +1,8 @@
+import {
+  to = statuspage_subscriber.email
+  id = "abc123def456/subscriber-id-1"
+}
+
 resource "statuspage_subscriber" "email" {
   page_id       = "abc123def456"
   email         = "user@example.com"
