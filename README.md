@@ -61,6 +61,19 @@ export STATUSPAGE_API_KEY="your-api-key"
 
 > **Note:** `statuspage_page` and `statuspage_status_embed_config` cannot be created or deleted via the API. Use `terraform import` to manage existing resources.
 
+## Data Sources
+
+- [statuspage_page](docs/data-sources/page.md)
+- [statuspage_component](docs/data-sources/component.md)
+- [statuspage_component_group](docs/data-sources/component_group.md)
+- [statuspage_incident](docs/data-sources/incident.md)
+- [statuspage_incident_template](docs/data-sources/incident_template.md)
+- [statuspage_metric](docs/data-sources/metric.md)
+- [statuspage_metrics_provider](docs/data-sources/metrics_provider.md)
+- [statuspage_subscriber](docs/data-sources/subscriber.md)
+- [statuspage_page_access_user](docs/data-sources/page_access_user.md)
+- [statuspage_page_access_group](docs/data-sources/page_access_group.md)
+
 ## Development
 
 ```shell
