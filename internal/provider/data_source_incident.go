@@ -27,7 +27,7 @@ type incidentDataSourceModel struct {
 	ImpactOverride                            types.String `tfsdk:"impact_override"`
 	Body                                      types.String `tfsdk:"body"`
 	ComponentIDs                              types.List   `tfsdk:"component_ids"`
-	Components                                types.Map    `tfsdk:"components"`
+	Components                                types.List   `tfsdk:"components"`
 	ScheduledFor                              types.String `tfsdk:"scheduled_for"`
 	ScheduledUntil                            types.String `tfsdk:"scheduled_until"`
 	ScheduledRemindPrior                      types.Bool   `tfsdk:"scheduled_remind_prior"`
@@ -64,7 +64,28 @@ func (d *incidentDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 			"impact_override":  schema.StringAttribute{Computed: true},
 			"body":             schema.StringAttribute{Computed: true, Description: "The initial message, created as the first incident update."},
 			"component_ids":    schema.ListAttribute{Computed: true, ElementType: types.StringType},
-			"components":       schema.MapAttribute{Computed: true, ElementType: types.StringType, Description: "Map of component IDs to their status."},
+			"components": schema.ListNestedAttribute{
+				Computed:    true,
+				Description: "List of components affected by this incident.",
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"id":                    schema.StringAttribute{Computed: true},
+						"page_id":               schema.StringAttribute{Computed: true},
+						"group_id":              schema.StringAttribute{Computed: true},
+						"created_at":            schema.StringAttribute{Computed: true},
+						"updated_at":            schema.StringAttribute{Computed: true},
+						"group":                 schema.BoolAttribute{Computed: true},
+						"name":                  schema.StringAttribute{Computed: true},
+						"description":           schema.StringAttribute{Computed: true},
+						"position":              schema.Int64Attribute{Computed: true},
+						"status":                schema.StringAttribute{Computed: true},
+						"showcase":              schema.BoolAttribute{Computed: true},
+						"only_show_if_degraded": schema.BoolAttribute{Computed: true},
+						"automation_email":       schema.StringAttribute{Computed: true},
+						"start_date":            schema.StringAttribute{Computed: true},
+					},
+				},
+			},
 			"scheduled_for":    schema.StringAttribute{Computed: true, Description: "The timestamp the maintenance is scheduled for (ISO 8601)."},
 			"scheduled_until":  schema.StringAttribute{Computed: true, Description: "The timestamp the maintenance is scheduled until (ISO 8601)."},
 			"scheduled_remind_prior":                        schema.BoolAttribute{Computed: true},
@@ -142,10 +163,5 @@ func (d *incidentDataSource) mapToState(ctx context.Context, state *incidentData
 	} else {
 		state.ComponentIDs = types.ListNull(types.StringType)
 	}
-	if len(i.Components) > 0 {
-		components, _ := types.MapValueFrom(ctx, types.StringType, i.Components)
-		state.Components = components
-	} else {
-		state.Components = types.MapNull(types.StringType)
-	}
+	state.Components = mapComponentsToList(ctx, i.Components)
 }

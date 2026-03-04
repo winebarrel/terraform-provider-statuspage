@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -35,7 +36,7 @@ type incidentResourceModel struct {
 	ImpactOverride                            types.String `tfsdk:"impact_override"`
 	Body                                      types.String `tfsdk:"body"`
 	ComponentIDs                              types.List   `tfsdk:"component_ids"`
-	Components                                types.Map    `tfsdk:"components"`
+	Components                                types.List   `tfsdk:"components"`
 	ScheduledFor                              types.String `tfsdk:"scheduled_for"`
 	ScheduledUntil                            types.String `tfsdk:"scheduled_until"`
 	ScheduledRemindPrior                      types.Bool   `tfsdk:"scheduled_remind_prior"`
@@ -102,10 +103,27 @@ func (r *incidentResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 				Optional:    true,
 				ElementType: types.StringType,
 			},
-			"components": schema.MapAttribute{
-				Optional:    true,
-				ElementType: types.StringType,
-				Description: "Map of component IDs to their status.",
+			"components": schema.ListNestedAttribute{
+				Computed:    true,
+				Description: "List of components affected by this incident.",
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"id":                    schema.StringAttribute{Computed: true},
+						"page_id":               schema.StringAttribute{Computed: true},
+						"group_id":              schema.StringAttribute{Computed: true},
+						"created_at":            schema.StringAttribute{Computed: true},
+						"updated_at":            schema.StringAttribute{Computed: true},
+						"group":                 schema.BoolAttribute{Computed: true},
+						"name":                  schema.StringAttribute{Computed: true},
+						"description":           schema.StringAttribute{Computed: true},
+						"position":              schema.Int64Attribute{Computed: true},
+						"status":                schema.StringAttribute{Computed: true},
+						"showcase":              schema.BoolAttribute{Computed: true},
+						"only_show_if_degraded": schema.BoolAttribute{Computed: true},
+						"automation_email":       schema.StringAttribute{Computed: true},
+						"start_date":            schema.StringAttribute{Computed: true},
+					},
+				},
 			},
 			"scheduled_for": schema.StringAttribute{
 				Optional:    true,
@@ -286,12 +304,6 @@ func (r *incidentResource) buildBody(ctx context.Context, plan *incidentResource
 		body.ComponentIDs = ids
 	}
 
-	if !plan.Components.IsNull() && !plan.Components.IsUnknown() {
-		m := make(map[string]string)
-		plan.Components.ElementsAs(ctx, &m, false)
-		body.Components = m
-	}
-
 	setBoolPtr(&body.ScheduledRemindPrior, plan.ScheduledRemindPrior)
 	setBoolPtr(&body.ScheduledAutoInProgress, plan.ScheduledAutoInProgress)
 	setBoolPtr(&body.ScheduledAutoCompleted, plan.ScheduledAutoCompleted)
@@ -335,10 +347,7 @@ func (r *incidentResource) mapToState(ctx context.Context, state *incidentResour
 		componentIDs, _ := types.ListValueFrom(ctx, types.StringType, i.ComponentIDs)
 		state.ComponentIDs = componentIDs
 	}
-	if len(i.Components) > 0 {
-		components, _ := types.MapValueFrom(ctx, types.StringType, i.Components)
-		state.Components = components
-	}
+	state.Components = mapComponentsToList(ctx, i.Components)
 }
 
 func setBoolPtr(dst **bool, src types.Bool) {
@@ -346,4 +355,53 @@ func setBoolPtr(dst **bool, src types.Bool) {
 		v := src.ValueBool()
 		*dst = &v
 	}
+}
+
+var incidentComponentAttrTypes = map[string]attr.Type{
+	"id":                    types.StringType,
+	"page_id":               types.StringType,
+	"group_id":              types.StringType,
+	"created_at":            types.StringType,
+	"updated_at":            types.StringType,
+	"group":                 types.BoolType,
+	"name":                  types.StringType,
+	"description":           types.StringType,
+	"position":              types.Int64Type,
+	"status":                types.StringType,
+	"showcase":              types.BoolType,
+	"only_show_if_degraded": types.BoolType,
+	"automation_email":      types.StringType,
+	"start_date":            types.StringType,
+}
+
+func mapComponentsToList(ctx context.Context, components []apiclient.Component) types.List {
+	componentObjType := types.ObjectType{AttrTypes: incidentComponentAttrTypes}
+
+	if len(components) == 0 {
+		return types.ListNull(componentObjType)
+	}
+
+	var vals []attr.Value
+	for _, c := range components {
+		obj, _ := types.ObjectValue(incidentComponentAttrTypes, map[string]attr.Value{
+			"id":                    types.StringValue(c.ID),
+			"page_id":               types.StringValue(c.PageID),
+			"group_id":              stringValueOrNull(c.GroupID),
+			"created_at":            stringValueOrNull(c.CreatedAt),
+			"updated_at":            stringValueOrNull(c.UpdatedAt),
+			"group":                 types.BoolValue(c.Group),
+			"name":                  types.StringValue(c.Name),
+			"description":           stringValueOrNull(c.Description),
+			"position":              types.Int64Value(int64(c.Position)),
+			"status":                stringValueOrNull(c.Status),
+			"showcase":              types.BoolValue(c.Showcase),
+			"only_show_if_degraded": types.BoolValue(c.OnlyShowIfDegraded),
+			"automation_email":      stringValueOrNull(c.AutomationEmail),
+			"start_date":            stringValueOrNull(c.StartDate),
+		})
+		vals = append(vals, obj)
+	}
+
+	list, _ := types.ListValue(componentObjType, vals)
+	return list
 }
