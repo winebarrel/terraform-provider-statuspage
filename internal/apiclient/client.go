@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httputil"
+	"strings"
 	"sync"
 	"time"
 
@@ -102,7 +103,7 @@ func (c *Client) doRequest(ctx context.Context, method, path string, body interf
 	if c.debug {
 		b, _ := httputil.DumpRequest(req, true)
 		additionalField := map[string]any{
-			"req": fmt.Sprintf("---request begin---\n%s\n---request end---\n", b),
+			"req": maskHeader("Authorization", fmt.Sprintf("---request begin---\n%s\n---request end---\n", b)),
 		}
 		tflog.Debug(ctx, "statuspage API request", additionalField)
 	}
@@ -223,4 +224,30 @@ func (c *Client) Delete(ctx context.Context, path string) error {
 	defer resp.Body.Close() //nolint:errcheck
 
 	return c.checkResponse(resp)
+}
+
+func maskHeader(name string, s string) string {
+	lines := strings.Split(s, "\n")
+	newLines := []string{}
+
+	for _, l := range lines {
+		if strings.HasPrefix(l, name+":") {
+			nv := strings.SplitN(l, ":", 2)
+			if len(nv) == 2 {
+				v := []rune(nv[1])
+				for i := 0; i < len(v)-5; i++ {
+					mask := '*'
+					if i == 0 {
+						mask = ' '
+					}
+					v[i] = mask
+				}
+				l = nv[0] + string(v)
+			}
+		}
+
+		newLines = append(newLines, l)
+	}
+
+	return strings.Join(newLines, "\n")
 }
